@@ -5,6 +5,8 @@ Choose from predefined themes or create your own custom theme to make your Sprin
 
 #### [Support the project](https://buymeacoffee.com/bhuyanp)
 
+<iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/29672"></iframe>
+
 ### Previews
 ![preview1.png](media/preview1.png)
 ![preview2.png](media/preview2.png)
