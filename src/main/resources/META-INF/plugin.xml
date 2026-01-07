@@ -1,13 +1,12 @@
 <!-- Plugin Configuration File: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN, cannot be changed between the plugin versions. -->
-    <id>io.github.bhuyanp.spring-boot-banner</id>
+    <id>io.github.bhuyanp.funky-banners</id>
 
-    <name>Spring Boot Banner</name>
+    <name>Funky Banners</name>
 
     <vendor url="https://github.com/bhuyanp/spring-banner-intellij-plugin">Prasanta Bhuyan</vendor>
     <description><![CDATA[
-
 <html>
 <body>
 
@@ -34,11 +33,16 @@
     - If you choose to Build and run using Gradle instead of IntelliJ, then consider using the <a
             href="https://github.com/bhuyanp/spring-banner-gradle-plugin">Spring Banner Gradle Plugin</a> instead<br/>
 
+
     <h3>Credits</h3>
     - Colorizer by <a href="https://github.com/dialex/jcolor">JColor</a><br/>
     - Figlet <a href="https://www.figlet.org/examples.html">fonts</a><br/>
+
+    <h4><a href="https://github.com/bhuyanp/spring-banner-intellij-plugin/issues">Report Issues</a></h4>
+
 </body>
 </html>
+
 
     ]]></description>
     <depends>com.intellij.modules.platform</depends>

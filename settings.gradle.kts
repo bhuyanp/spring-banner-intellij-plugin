@@ -1,1 +1,1 @@
-rootProject.name = "spring-boot-banner"
+rootProject.name = "funky-banners"
