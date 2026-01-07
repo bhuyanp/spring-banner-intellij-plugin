@@ -1,11 +1,16 @@
 ## Funky Banners (An IntelliJ Plugin for Spring Boot Applications)
 
+[![JetBrains Plugins](https://img.shields.io/jetbrains/plugin/v/15366-funky-banners?color=blue&label=JetBrains%20Plugins)](https://plugins.jetbrains.com/plugin/29672-funky-banners)
+[![JetBrains Plugins](https://img.shields.io/jetbrains/plugin/d/15366-funky-banners?color=blue&label=Downloads)](https://plugins.jetbrains.com/plugin/29672-funky-banners)
+[![GitHub issues](https://img.shields.io/github/issues/bhuyanp/funky-banners?color=blue)](https://github.com/bhuyanp/spring-banner-gradle-plugin)  
+
+
 Enhance your Spring Boot development experience with visually appealing startup banners.
 Choose from predefined themes or create your own custom theme to make your Spring Boot application stand out.
 
 #### [Support the project](https://buymeacoffee.com/bhuyanp)
 
-<iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/29672"></iframe>
+
 
 ### Previews
 ![preview1.png](media/preview1.png)
