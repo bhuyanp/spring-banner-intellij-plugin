@@ -91,11 +91,4 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         MAVEN
     }
 
-
-    @Override
-    public void buildFinished(@NotNull Project project, @NotNull UUID sessionId, boolean isAutomake) {
-
-    }
-
-
     }
