@@ -95,6 +95,14 @@ public final class Theme {
         };
     }
 
+    public static ThemeConfig getCaptionTheme(THEME_OPTION selectedTheme, boolean isDarkMode) {
+        return switch (selectedTheme) {
+            case DARK -> DARK.captionTheme;
+            case LIGHT -> LIGHT.captionTheme;
+            case AUTO, CUSTOM, SURPRISE_ME -> isDarkMode ? DARK.captionTheme : LIGHT.captionTheme;
+        };
+    }
+
     private static ThemeConfig getRandomBannerTheme(boolean isDarkMode) {
         boolean useAlternative = new Random().nextInt(10) == 0;
         Attribute textColor;

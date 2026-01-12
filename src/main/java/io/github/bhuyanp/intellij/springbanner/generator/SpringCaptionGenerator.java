@@ -1,0 +1,55 @@
+package io.github.bhuyanp.intellij.springbanner.generator;
+
+import io.github.bhuyanp.intellij.springbanner.model.SpringCaptionConfig;
+import io.github.bhuyanp.intellij.springbanner.theme.TextPadding;
+import io.github.bhuyanp.intellij.springbanner.theme.ThemeConfig;
+
+import java.util.stream.Collectors;
+
+import static io.github.bhuyanp.intellij.springbanner.ansi.Ansi.colorize;
+
+/**
+ *
+ *
+ * @author <a href="mailto:prasanta.k.bhuyan@gmail.com">Prasanta Bhuyan</a>
+ * @Date 1/12/26
+ */
+public class SpringCaptionGenerator {
+    public static final SpringCaptionGenerator INSTANCE = new SpringCaptionGenerator();
+
+    private static final String DEFAULT_CAPTION = """
+                Spring Boot      : %s
+                JDK              : %s
+                """;
+    private static final String DEFAULT_SPACING = " ";
+
+    public String getCaption(SpringCaptionConfig springCaptionConfig) {
+
+        String caption = DEFAULT_CAPTION.formatted(springCaptionConfig.getSpringVersion(), springCaptionConfig.getJdkVersion());
+
+        // Remove spaces around caption lines
+        caption = caption.lines().map(String::trim).collect(Collectors.joining(System.lineSeparator()));
+
+        // Find the biggest line in caption
+        int biggestLineLength = caption.lines().map(String::length).max(Integer::compareTo).get();
+
+
+        // Add spaces to smaller lines to match the biggestLineLength
+        caption = caption.lines()
+                .map(line -> line + DEFAULT_SPACING.repeat(biggestLineLength - line.length()))
+                .collect(Collectors.joining(System.lineSeparator()));
+
+        ThemeConfig captionTheme = springCaptionConfig.getCaptionTheme();
+        //For no background, padding not needed for captions
+        boolean addPadding = captionTheme.hasBackColor();
+        if (addPadding) {
+            caption = new TextPadding(1, 2, 1, 2).apply(caption);
+        } else {
+            caption = caption.lines().map(line -> "| " + line).collect(Collectors.joining(System.lineSeparator()));
+        }
+        caption = colorize(caption, captionTheme);
+        caption = new TextPadding(0, 0, 1, 0).apply(caption);
+        return caption;
+    }
+
+}

@@ -26,12 +26,13 @@ public abstract class BannerWriter {
             targetDirs.forEach(targetDir -> {
                 try {
                     String directory = String.join("/", targetDir);
+                    Path bannerFile = Path.of(directory, FILENAME);
                     Path directoryPath = Path.of(directory);
                     if(!Files.exists(directoryPath)){
                         Files.createDirectories(directoryPath);
+                    } else {
+                        Files.deleteIfExists(bannerFile);
                     }
-                    Path bannerFile = Path.of(directory, FILENAME);
-                    Files.deleteIfExists(bannerFile);
                     Files.write(bannerFile, (bannerText).getBytes(), StandardOpenOption.CREATE);
                 } catch (IOException e) {
                     log.error("Error writing the banner file.", e);

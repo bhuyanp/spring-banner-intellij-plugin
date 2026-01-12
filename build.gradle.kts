@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.2"
+version = "2026.1.3"
 
 repositories {
     mavenCentral()
@@ -34,11 +34,9 @@ intellijPlatform {
         }
 
         changeNotes = """
-        - Auto theme which will automatically choose from light and dark theme to match IDE theme<br/>
-        - Project level setting to override global settings<br/>
-        - Color names displayed next to color pickers<br/>
-        - Enhanced color combination under "Surprise Me" to improve contrast<br/>
-        - Improved plugin description to better reflect its features and benefits<br/>
+        - Caption underneath the banner now shows SpringBoot and JDK version<br/> 
+        - Doubled the randomization combinations for "Surprise Me" theme<br/>
+        - Banner.txt now being written to build folder for gradle builds<br/>
         """.trimIndent()
     }
 
