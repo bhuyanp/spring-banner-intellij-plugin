@@ -52,7 +52,7 @@ public class SpringBannerBuildListener implements BuildManagerListener {
     private static void writeBannerFile(BUILD_TOOL buildTool, String generateBanner, String projectBasePath) {
         switch (buildTool) {
             case MAVEN -> BannerWriter.of(BannerWriter.WRITER_TYPE.MAVEN).write(generateBanner, projectBasePath);
-            case GRADLE -> BannerWriter.of(BannerWriter.WRITER_TYPE.SOURCE).write(generateBanner, projectBasePath);
+            case GRADLE -> BannerWriter.of(BannerWriter.WRITER_TYPE.GRADLE).write(generateBanner, projectBasePath);
         }
     }
 

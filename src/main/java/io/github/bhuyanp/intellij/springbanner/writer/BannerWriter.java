@@ -3,9 +3,11 @@ package io.github.bhuyanp.intellij.springbanner.writer;
 import com.intellij.openapi.util.text.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 /**
  *
@@ -19,37 +21,50 @@ public abstract class BannerWriter {
 
     public void write(String bannerText, String projectBasePath) {
         try {
-            if (StringUtil.isEmpty(bannerText)) return;
-            Path path = getPath(projectBasePath);
-            if (Files.exists(path)) {
-                Files.delete(path);
-            }
-            Files.write(path, (bannerText).getBytes(), StandardOpenOption.CREATE);
+            if (StringUtil.isEmpty(bannerText) || StringUtil.isEmpty(projectBasePath)) return;
+            List<List<String>> targetDirs = getTargetDirectories(projectBasePath);
+            targetDirs.forEach(targetDir -> {
+                try {
+                    String directory = String.join("/", targetDir);
+                    Path directoryPath = Path.of(directory);
+                    if(!Files.exists(directoryPath)){
+                        Files.createDirectories(directoryPath);
+                    }
+                    Path bannerFile = Path.of(directory, FILENAME);
+                    Files.deleteIfExists(bannerFile);
+                    Files.write(bannerFile, (bannerText).getBytes(), StandardOpenOption.CREATE);
+                } catch (IOException e) {
+                    log.error("Error writing the banner file.", e);
+                }
+            });
         } catch (Exception e) {
             log.error("Error writing the banner file.", e);
         }
     }
 
-    abstract Path getPath(String projectBasePath);
+    abstract List<List<String>> getTargetDirectories(String projectBasePath);
 
     private static class MavenWriter extends BannerWriter {
         @Override
-        Path getPath(String projectBasePath) {
-            return Path.of(projectBasePath, "target", "classes", FILENAME);
+        List<List<String>> getTargetDirectories(String projectBasePath) {
+            return List.of(List.of(projectBasePath, "target", "classes"));
         }
     }
 
     private static class GradleWriter extends BannerWriter {
         @Override
-        Path getPath(String projectBasePath) {
-            return Path.of(projectBasePath, "build", "resources", "main", FILENAME);
+        List<List<String>> getTargetDirectories(String projectBasePath) {
+            return List.of(
+                    List.of(projectBasePath, "out", "production", "resources"),
+                    List.of(projectBasePath, "build", "resources", "main")
+            );
         }
     }
 
     private static class SourceWriter extends BannerWriter {
         @Override
-        Path getPath(String projectBasePath) {
-            return Path.of(projectBasePath, "src", "main", "resources", FILENAME);
+        List<List<String>> getTargetDirectories(String projectBasePath) {
+            return List.of(List.of(projectBasePath, "src", "main", "resources"));
         }
     }
 

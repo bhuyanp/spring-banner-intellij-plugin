@@ -2,6 +2,8 @@ package io.github.bhuyanp.intellij.springbanner.theme;
 
 
 import io.github.bhuyanp.intellij.springbanner.ansi.Attribute;
+import io.github.bhuyanp.intellij.springbanner.generator.SpringBannerGenerator;
+import io.github.bhuyanp.intellij.springbanner.model.SpringBannerConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,7 @@ import java.util.Random;
 
 import static io.github.bhuyanp.intellij.springbanner.ansi.Ansi.colorize;
 import static io.github.bhuyanp.intellij.springbanner.ansi.Attribute.*;
+import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.DEFAULT_FONTS;
 
 
 /**
@@ -42,30 +45,24 @@ public final class Theme {
     }
 
     public Theme(final List<Integer> bannerTextColors, final List<Integer> bannerBackColors, final boolean bold, final ADDITIONAL_EFFECT additionalEffect) {
+        this.bannerTheme = new ThemeConfig(
+                TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
+                BACK_COLOR(bannerBackColors.get(0), bannerBackColors.get(1), bannerBackColors.get(2)),
+                getAdditionalEffect(additionalEffect));
         if (bold) {
-            this.bannerTheme = new ThemeConfig(
-                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
-                    BACK_COLOR(bannerBackColors.get(0), bannerBackColors.get(1), bannerBackColors.get(2)),
-                    BOLD(),
-                    getAdditionalEffect(additionalEffect));
-        } else
-            this.bannerTheme = new ThemeConfig(
-                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
-                    BACK_COLOR(bannerBackColors.get(0), bannerBackColors.get(1), bannerBackColors.get(2)),
-                    getAdditionalEffect(additionalEffect));
+            this.bannerTheme.addBold();
+        }
     }
+
     public Theme(final List<Integer> bannerTextColors, final boolean bold, final ADDITIONAL_EFFECT additionalEffect) {
+        this.bannerTheme = new ThemeConfig(
+                TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
+                NONE(),
+                getAdditionalEffect(additionalEffect));
         if (bold) {
-            this.bannerTheme = new ThemeConfig(
-                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
-                    NONE(),
-                    BOLD(),
-                    getAdditionalEffect(additionalEffect));
-        } else
-            this.bannerTheme = new ThemeConfig(
-                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
-                    NONE(),
-                    getAdditionalEffect(additionalEffect));
+            this.bannerTheme.addBold();
+        }
+
     }
 
     private Attribute getAdditionalEffect(ADDITIONAL_EFFECT additionalEffect) {
@@ -94,19 +91,33 @@ public final class Theme {
             case LIGHT -> LIGHT.bannerTheme;
             case AUTO -> isDarkMode ? DARK.bannerTheme : LIGHT.bannerTheme;
             case SURPRISE_ME -> getRandomBannerTheme(isDarkMode);
-            case CUSTOM -> null;// Custom is handled separately
+            case CUSTOM -> throw new IllegalArgumentException("Custom theme is not supported through factory method.");
         };
     }
 
-    public static ThemeConfig getRandomBannerTheme(boolean isDarkMode) {
-        List<Attribute> textColors = isDarkMode ? brightTextTextColors : darkTextTextColors;
-        List<Attribute> backgroundColors = isDarkMode ? darkBackgroundColors : brightBackgroundColors;
+    private static ThemeConfig getRandomBannerTheme(boolean isDarkMode) {
+        boolean useAlternative = new Random().nextInt(10) == 0;
+        Attribute textColor;
+        Attribute backgroundColor;
+        if (useAlternative) {
+            textColor = !isDarkMode ? getRandomAttribute(brightTextColors) : getRandomAttribute(darkTextColors);
+            backgroundColor = !isDarkMode ? getRandomAttribute(darkBackgroundColors, NONE()) : getRandomAttribute(brightBackgroundColors, NONE());
 
-        return new ThemeConfig(
-                getRandomAttribute(textColors),//text
-                getRandomAttribute(backgroundColors),//background
-                getRandomAttribute(bannerEffects)//effect
+        } else {
+            textColor = isDarkMode ? getRandomAttribute(brightTextColors) : getRandomAttribute(darkTextColors);
+            backgroundColor = isDarkMode ? getRandomAttribute(darkBackgroundColors) : getRandomAttribute(brightBackgroundColors);
+        }
+
+        boolean addBold = new Random().nextInt(5) == 0;
+        ThemeConfig themeConfig = new ThemeConfig(
+                textColor,
+                backgroundColor,
+                getRandomAttribute(bannerEffects)
         );
+        if (addBold) {
+            themeConfig.addBold();
+        }
+        return themeConfig;
     }
 
     // https://imagecolorpicker.com/
@@ -127,7 +138,7 @@ public final class Theme {
             BACK_COLOR(45, 45, 45)
     );
 
-    private static final List<Attribute> brightTextTextColors = List.of(
+    private static final List<Attribute> brightTextColors = List.of(
             TEXT_COLOR(127, 180, 255),  // Malibu
             TEXT_COLOR(142, 189, 255),  // Anakiwa
             TEXT_COLOR(220, 240, 255),  // Patterns Blue
@@ -158,8 +169,10 @@ public final class Theme {
             BACK_COLOR(255, 220, 220)   // Cosmos
     );
 
-    private static final List<Attribute> darkTextTextColors = List.of(
+    private static final List<Attribute> darkTextColors = List.of(
             BLACK_TEXT(),
+            TEXT_COLOR(141, 51, 51), //El Salva
+            TEXT_COLOR(31, 99, 147), //Matisse
             TEXT_COLOR(21, 62, 75), //Elephant
             TEXT_COLOR(44, 29, 110),  //Melorite
             TEXT_COLOR(56, 58, 81),    //Bright Gray
@@ -169,16 +182,14 @@ public final class Theme {
     );
 
 
-    static final List<Attribute> bannerEffects = List.of(
+    private static final List<Attribute> bannerEffects = List.of(
             NONE(),
-            BOLD(),
-            BOLD(),
+            NONE(),
             FRAMED(),
             ENCIRCLED(),
             DIM(),
             DESATURATED(),
             DESATURATED(),
-            SATURATED(),
             SATURATED(),
             SATURATED(),
             SATURATED()
@@ -187,6 +198,12 @@ public final class Theme {
 
     private static Attribute getRandomAttribute(List<Attribute> attributes) {
         return attributes.get(new Random().nextInt(attributes.size()));
+    }
+
+    private static Attribute getRandomAttribute(List<Attribute> attributes, Attribute exclude) {
+        List<Attribute> filteredAttributeList = attributes.stream().filter(at -> !at.construct().equalsIgnoreCase(exclude.construct()))
+                .toList();
+        return filteredAttributeList.get(new Random().nextInt(filteredAttributeList.size()));
     }
 
 
@@ -225,47 +242,50 @@ public final class Theme {
     }
 
     public static void main(String[] args) {
-
-        printAllColors();
-        //printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", false);
-
-
+        //printAllColors();
+        printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", true);
     }
 
-    private static void printRandom(THEME_OPTION themeOption, String text, boolean isDark){
-        TextPadding textPadding = new TextPadding(2, 3, 2, 3);
+    private static void printRandom(THEME_OPTION themeOption, String text, boolean isDark) {
         for (int i = 0; i < 20; i++) {
             ThemeConfig bannerTheme1 = getBannerTheme(themeOption, isDark);
-            String colorizedText = colorize(textPadding.apply(bannerTheme1.getAttributes().stream().map(Attribute::construct).toList().toString()),
-                    bannerTheme1.getAttributes().toArray(new Attribute[0]));
-            System.out.println(colorizedText);
+            String randomFont = DEFAULT_FONTS.get(new Random().nextInt(DEFAULT_FONTS.size()));
+            SpringBannerConfig springBannerConfig = SpringBannerConfig.builder()
+                    .text(text)
+                    .bannerFont(randomFont)
+                    .bannerTheme(bannerTheme1).build();
+            String banner = SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
+            System.out.println(banner);
+            assert bannerTheme1 != null;
+            System.out.println("-- " + randomFont + " " + bannerTheme1.getAttributes().stream().map(Attribute::construct).toList());
         }
     }
 
     private static void printAllColors() {
         TextPadding textPadding = new TextPadding(1, 2, 1, 2);
 
-        System.out.println("## brightBackgroundColors:");
+        System.out.println("##[BRIGHT Theme] Bright Background Colors:");
         brightBackgroundColors.stream().distinct().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .forEach(System.out::println);
 
         System.out.println("------");
-        System.out.println("## darkBackgroundColors:");
+        System.out.println("##[BRIGHT Theme] Dark Text Colors:");
+        darkTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+                .distinct()
+                .forEach(System.out::println);
+
+        System.out.println("------");
+        System.out.println("##[DARK Theme] Dark Background Colors:");
         darkBackgroundColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .distinct()
                 .forEach(System.out::println);
 
         System.out.println("------");
-        System.out.println("## brightTextTextColors:");
-        brightTextTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+        System.out.println("##[DARK Theme] Bright TextText Colors:");
+        brightTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .distinct()
                 .forEach(System.out::println);
 
-        System.out.println("------");
-        System.out.println("## darkTextTextColors:");
-        darkTextTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
-                .distinct()
-                .forEach(System.out::println);
 
         System.out.println("------");
         System.out.println("## Banner Effects:");
