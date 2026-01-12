@@ -11,11 +11,15 @@ import java.util.List;
  */
 public class PluginConstants {
 
+    public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
+    public static final String SPRING_BOOT_ARTIFACT_ID = "spring-boot-starter";
     public static final String RANDOM_FONT = "-- Random --";
     public static final List<String> DEFAULT_FONTS = List.of(
             "3d",
+            "3d",
             "4max",
             "ansiregular",
+            "ansishadow",
             "ansishadow",
             "banner3_d",
             "banner4",
@@ -25,6 +29,7 @@ public class PluginConstants {
             "calvins",
             "colossal",
             "cyberlarge",
+            "elite",
             "elite",
             "georgia11",
             "lean",
@@ -36,8 +41,6 @@ public class PluginConstants {
             "puffy",
             "soft",
             "standard",
-            "usaflag",
-            "usaflag",
             "usaflag",
             "whimsy");
     public static final List<String> FONT_OPTIONS;
