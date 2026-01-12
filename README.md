@@ -8,9 +8,6 @@
 Enhance your Spring Boot development experience with visually appealing startup banners.
 Choose from predefined themes or create your own custom theme to make your Spring Boot application stand out.
 
-#### [Support the project](https://buymeacoffee.com/bhuyanp)
-
-
 
 ### Previews
 ![preview1.png](media/preview1.png)
@@ -28,11 +25,19 @@ Choose from predefined themes or create your own custom theme to make your Sprin
 
 - Running the application from terminal will NOT reflect the banner changes as the plugin depends on IDE's internal build system
 - If you are using gradle, make sure to enable Build and run using IntelliJ under 'Settings->Build->Build Tools->Gradle'
+<img src="media/gradle.png" alt="Gradle" style="width:600px;" />
 - If you choose to Build and run using Gradle instead of IntelliJ, then consider using the [Spring Banner Gradle Plugin](https://github.com/bhuyanp/spring-banner-gradle-plugin) to generate custom banners
-<img src="media/gradle.png" alt="Gradle" style="width:500px;" />
-
+- Recommended Console Font Line Height: 1.0 for better appearance<br/>
+<img src="media/console-font.png" alt="Console Font" style="width:600px;" />
 
 ### Credits
 
+- [Figlet](http://www.figlet.org)
+- [JFiglet](https://github.com/dtmo/jfiglet)
 - Colorizer by [JColor](https://github.com/dialex/jcolor)
-- Figlet fonts used:  [FIGlet](https://www.figlet.org/examples.html)
+
+### Love Funky Banners?
+
+Please consider supporting our efforts.
+
+<a href="https://buymeacoffee.com/bhuyanp"><img src="media/qr-code.png" alt="Buy Me A Coffee" width="120px"></a>

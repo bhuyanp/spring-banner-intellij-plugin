@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.1"
+version = "2026.1.2"
 
 repositories {
     mavenCentral()
@@ -13,8 +13,9 @@ repositories {
         defaultRepositories()
     }
 }
+
 val lombokVersion = "1.18.30"
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
+
 dependencies {
     implementation("com.github.dtmo.jfiglet:jfiglet:1.0.1")
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
@@ -33,7 +34,11 @@ intellijPlatform {
         }
 
         changeNotes = """
-        <h2>First Release</h2>
+        - Auto theme which will automatically choose from light and dark theme to match IDE theme<br/>
+        - Project level setting to override global settings<br/>
+        - Color names displayed next to color pickers<br/>
+        - Enhanced color combination under "Surprise Me" to improve contrast<br/>
+        - Improved plugin description to better reflect its features and benefits<br/>
         """.trimIndent()
     }
 
