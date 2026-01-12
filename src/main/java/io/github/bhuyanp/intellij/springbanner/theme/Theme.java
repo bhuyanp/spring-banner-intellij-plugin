@@ -2,9 +2,9 @@ package io.github.bhuyanp.intellij.springbanner.theme;
 
 
 import io.github.bhuyanp.intellij.springbanner.ansi.Attribute;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
@@ -18,42 +18,54 @@ import static io.github.bhuyanp.intellij.springbanner.ansi.Attribute.*;
  * @author Prasanta Bhuyan
  * @since 1.0
  */
+@Getter
 @NoArgsConstructor
 public final class Theme {
 
+
     static final Theme DARK = new Theme(
-            new ThemeConfig(TEXT_COLOR(230, 230, 230), BACK_COLOR(45, 45, 45), BOLD()),
+            new ThemeConfig(TEXT_COLOR(232, 232, 232), BACK_COLOR(40, 40, 40), BOLD()),
             new ThemeConfig(CYAN_TEXT(), NONE())
     );
 
     static final Theme LIGHT = new Theme(
-            new ThemeConfig(TEXT_COLOR(60, 60, 60), BACK_COLOR(242, 242, 242), BOLD()),
+            new ThemeConfig(TEXT_COLOR(50, 50, 50), BACK_COLOR(245, 245, 245), BOLD()),
             new ThemeConfig(TEXT_COLOR(0, 120, 120), NONE())
     );
 
-    static final Theme SURPRISE_ME = new Theme();
-
-    private ThemeConfig _bannerTheme;
-    private ThemeConfig _captionTheme;
+    private ThemeConfig bannerTheme;
+    private ThemeConfig captionTheme;
 
     Theme(ThemeConfig bannerTheme, ThemeConfig captionTheme) {
-        this._captionTheme = captionTheme;
-        this._bannerTheme = bannerTheme;
+        this.captionTheme = captionTheme;
+        this.bannerTheme = bannerTheme;
     }
 
     public Theme(final List<Integer> bannerTextColors, final List<Integer> bannerBackColors, final boolean bold, final ADDITIONAL_EFFECT additionalEffect) {
         if (bold) {
-            this._bannerTheme = new ThemeConfig(
+            this.bannerTheme = new ThemeConfig(
                     TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
                     BACK_COLOR(bannerBackColors.get(0), bannerBackColors.get(1), bannerBackColors.get(2)),
                     BOLD(),
                     getAdditionalEffect(additionalEffect));
         } else
-            this._bannerTheme = new ThemeConfig(
+            this.bannerTheme = new ThemeConfig(
                     TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
                     BACK_COLOR(bannerBackColors.get(0), bannerBackColors.get(1), bannerBackColors.get(2)),
                     getAdditionalEffect(additionalEffect));
-
+    }
+    public Theme(final List<Integer> bannerTextColors, final boolean bold, final ADDITIONAL_EFFECT additionalEffect) {
+        if (bold) {
+            this.bannerTheme = new ThemeConfig(
+                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
+                    NONE(),
+                    BOLD(),
+                    getAdditionalEffect(additionalEffect));
+        } else
+            this.bannerTheme = new ThemeConfig(
+                    TEXT_COLOR(bannerTextColors.get(0), bannerTextColors.get(1), bannerTextColors.get(2)),
+                    NONE(),
+                    getAdditionalEffect(additionalEffect));
     }
 
     private Attribute getAdditionalEffect(ADDITIONAL_EFFECT additionalEffect) {
@@ -69,73 +81,91 @@ public final class Theme {
 
     public enum ADDITIONAL_EFFECT {
         NONE,
-        FRAMED,
-        ENCIRCLED,
-        DIM,
+        SATURATED,
         DESATURATED,
-        SATURATED
+        DIM,
+        FRAMED,
+        ENCIRCLED
     }
 
-    public ThemeConfig getBannerTheme() {
-        return (null != _bannerTheme) ? _bannerTheme : new ThemeConfig(
-                getRandomAttribute(bannerTextColors),
-                getRandomAttribute(bannerBackColors),
-                getRandomAttribute(bannerEffects));
+    public static ThemeConfig getBannerTheme(THEME_OPTION selectedTheme, boolean isDarkMode) {
+        return switch (selectedTheme) {
+            case DARK -> DARK.bannerTheme;
+            case LIGHT -> LIGHT.bannerTheme;
+            case AUTO -> isDarkMode ? DARK.bannerTheme : LIGHT.bannerTheme;
+            case SURPRISE_ME -> getRandomBannerTheme(isDarkMode);
+            case CUSTOM -> null;// Custom is handled separately
+        };
     }
 
-    public ThemeConfig getCaptionTheme() {
-        return (null != _captionTheme) ? _captionTheme : new ThemeConfig(
-                getRandomAttribute(bannerTextColors),
-                getRandomAttribute(captionBackColors),
-                getRandomAttribute(captionEffects));
+    public static ThemeConfig getRandomBannerTheme(boolean isDarkMode) {
+        List<Attribute> textColors = isDarkMode ? brightTextTextColors : darkTextTextColors;
+        List<Attribute> backgroundColors = isDarkMode ? darkBackgroundColors : brightBackgroundColors;
 
+        return new ThemeConfig(
+                getRandomAttribute(textColors),//text
+                getRandomAttribute(backgroundColors),//background
+                getRandomAttribute(bannerEffects)//effect
+        );
     }
 
+    // https://imagecolorpicker.com/
+    private static final List<Attribute> darkBackgroundColors = List.of(
+            NONE(),
+            NONE(),
+            BLACK_BACK(),
+            BLACK_BACK(),
+            BACK_COLOR(141, 51, 51), //El Salva
+            BACK_COLOR(61, 83, 118), // East Bay
+            BACK_COLOR(13, 38, 46), //Firefly
+            BACK_COLOR(14, 8, 42),  //Violet
+            BACK_COLOR(38, 39, 58),    //Ebony Clay
+            BACK_COLOR(26, 27, 31),   //Shark
+            BACK_COLOR(26, 27, 31),   //Shark
+            BACK_COLOR(33, 10, 14),  //Coffee Bean
+            BACK_COLOR(42, 27, 8),   //Graphite
+            BACK_COLOR(45, 45, 45)
+    );
 
-    static final List<Attribute> bannerTextColors = List.of(
+    private static final List<Attribute> brightTextTextColors = List.of(
+            TEXT_COLOR(127, 180, 255),  // Malibu
+            TEXT_COLOR(142, 189, 255),  // Anakiwa
+            TEXT_COLOR(220, 240, 255),  // Patterns Blue
+            TEXT_COLOR(237, 255, 220),  // Rice Flower
+            TEXT_COLOR(249, 249, 249),  // Albaster
+            TEXT_COLOR(240, 240, 240),  // Gallery
+            TEXT_COLOR(205, 214, 220),  // Geyser
+            TEXT_COLOR(255, 220, 220),   // Cosmos
+            TEXT_COLOR(230, 230, 230),
+            BRIGHT_BLUE_TEXT(),
             BRIGHT_BLUE_TEXT(),
             BRIGHT_MAGENTA_TEXT(),
             BRIGHT_CYAN_TEXT(),
-            BRIGHT_WHITE_TEXT(),
-            BRIGHT_RED_TEXT(),
-            BRIGHT_BLUE_TEXT(),
-            TEXT_COLOR(230, 230, 230),
-            TEXT_COLOR(252, 195, 185),//melon
-            TEXT_COLOR(113, 236, 241),//Electric blue
-            TEXT_COLOR(231, 247, 225),//honey dew
-            TEXT_COLOR(246, 191, 255)//mauve
+            BRIGHT_WHITE_TEXT()
     );
 
-    static final List<Attribute> bannerBackColors = List.of(BLACK_BACK(),
+    private static final List<Attribute> brightBackgroundColors = List.of(
             NONE(),
             NONE(),
-            NONE(),
-            RED_BACK(),
-            GREEN_BACK(),
-            YELLOW_BACK(),
-            BLUE_BACK(),
-            MAGENTA_BACK(),
-            BLACK_BACK(),
-            BLACK_BACK(),
-            CYAN_BACK(),
-            BRIGHT_BLACK_BACK(),
-            BACK_COLOR(58, 68, 79),
-            BACK_COLOR(6, 20, 57)
+            BRIGHT_WHITE_BACK(),
+            BACK_COLOR(127, 180, 255),  // Malibu
+            BACK_COLOR(142, 189, 255),  // Anakiwa
+            BACK_COLOR(220, 240, 255),  // Patterns Blue
+            BACK_COLOR(237, 255, 220),  // Rice Flower
+            BACK_COLOR(249, 249, 249),  // Albaster
+            BACK_COLOR(240, 240, 240),  // Gallery
+            BACK_COLOR(205, 214, 220),  // Geyser
+            BACK_COLOR(255, 220, 220)   // Cosmos
     );
 
-    static final List<Attribute> captionBackColors = List.of(
-            NONE(),
-            NONE(),
-            NONE(),
-            NONE(),
-            NONE(),
-            NONE(),
-            NONE(),
-            BLACK_BACK(),
-            BLACK_BACK(),
-            BRIGHT_BLACK_BACK(),
-            BRIGHT_BLACK_BACK(),
-            BACK_COLOR(72, 69, 76)
+    private static final List<Attribute> darkTextTextColors = List.of(
+            BLACK_TEXT(),
+            TEXT_COLOR(21, 62, 75), //Elephant
+            TEXT_COLOR(44, 29, 110),  //Melorite
+            TEXT_COLOR(56, 58, 81),    //Bright Gray
+            TEXT_COLOR(26, 27, 31),   //Shark
+            TEXT_COLOR(33, 10, 14),  //Coffee Bean
+            TEXT_COLOR(42, 27, 8)   //Graphite
     );
 
 
@@ -155,26 +185,10 @@ public final class Theme {
     );
 
 
-    static final List<Attribute> captionEffects = List.of(
-            NONE(),
-            BOLD(),
-            BOLD(),
-            FRAMED(),
-            ENCIRCLED(),
-            DIM(),
-            ITALIC(),
-            ITALIC(),
-            ITALIC(),
-            DESATURATED(),
-            SATURATED(),
-            SATURATED(),
-            SATURATED()
-    );
-
-
-    private Attribute getRandomAttribute(List<Attribute> attributes) {
+    private static Attribute getRandomAttribute(List<Attribute> attributes) {
         return attributes.get(new Random().nextInt(attributes.size()));
     }
+
 
     public static TextPadding getBannerPadding(String font) {
         return switch (font) {
@@ -211,33 +225,53 @@ public final class Theme {
     }
 
     public static void main(String[] args) {
+
+        printAllColors();
+        //printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", false);
+
+
+    }
+
+    private static void printRandom(THEME_OPTION themeOption, String text, boolean isDark){
+        TextPadding textPadding = new TextPadding(2, 3, 2, 3);
+        for (int i = 0; i < 20; i++) {
+            ThemeConfig bannerTheme1 = getBannerTheme(themeOption, isDark);
+            String colorizedText = colorize(textPadding.apply(bannerTheme1.getAttributes().stream().map(Attribute::construct).toList().toString()),
+                    bannerTheme1.getAttributes().toArray(new Attribute[0]));
+            System.out.println(colorizedText);
+        }
+    }
+
+    private static void printAllColors() {
         TextPadding textPadding = new TextPadding(1, 2, 1, 2);
 
-        System.out.println("## Banner Text Colors:");
-        bannerTextColors.stream().distinct().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+        System.out.println("## brightBackgroundColors:");
+        brightBackgroundColors.stream().distinct().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .forEach(System.out::println);
+
         System.out.println("------");
-        System.out.println("## Banner Back Colors:");
-        bannerBackColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+        System.out.println("## darkBackgroundColors:");
+        darkBackgroundColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .distinct()
                 .forEach(System.out::println);
+
         System.out.println("------");
-        System.out.println("## Caption Back Colors:");
-        captionBackColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+        System.out.println("## brightTextTextColors:");
+        brightTextTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .distinct()
                 .forEach(System.out::println);
+
+        System.out.println("------");
+        System.out.println("## darkTextTextColors:");
+        darkTextTextColors.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
+                .distinct()
+                .forEach(System.out::println);
+
         System.out.println("------");
         System.out.println("## Banner Effects:");
         bannerEffects.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
                 .distinct()
                 .forEach(System.out::println);
-        System.out.println("------");
-        System.out.println("## Caption Effects:");
-        captionEffects.stream().map(attribute -> colorize(textPadding.apply(attribute.construct()), attribute))
-                .distinct()
-                .forEach(System.out::println);
-
-
     }
 
 

@@ -1,12 +1,14 @@
 package io.github.bhuyanp.intellij.springbanner;
 
 import com.intellij.compiler.server.BuildManagerListener;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import io.github.bhuyanp.intellij.springbanner.generator.SpringBannerGenerator;
 import io.github.bhuyanp.intellij.springbanner.model.SpringBannerConfig;
-import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import io.github.bhuyanp.intellij.springbanner.theme.THEME_OPTION;
+import io.github.bhuyanp.intellij.springbanner.theme.Theme;
+import io.github.bhuyanp.intellij.springbanner.theme.ThemeConfig;
 import io.github.bhuyanp.intellij.springbanner.writer.BannerWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -31,18 +33,16 @@ public class SpringBannerBuildListener implements BuildManagerListener {
     public void beforeBuildProcessStarted(@NotNull Project project, @NotNull UUID sessionId) {
         BuildManagerListener.super.beforeBuildProcessStarted(project, sessionId);
         try {
-
             String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
             AppSettings.State state = Objects.requireNonNull(AppSettings.getInstance().getState());
-            String bannerText = state.bannerText;
-            bannerText = StringUtil.isEmpty(bannerText) ? project.getName() : bannerText;
-            THEME_OPTION themePreset = state.selectedTheme;
-            String bannerFont = state.bannerFont;
+
+            AppSettings.Setting setting = state.globalSetting;
+            AppSettings.ProjectSpecificSetting projectSpecificSetting = state.projectSpecificSettings.get(project.getName());
+            setting = projectSpecificSetting == null || !projectSpecificSetting.useProjectSpecificSetting ? setting : projectSpecificSetting;
+
             BUILD_TOOL buildTool = determineBuildTool(project);
-            String generateBanner = generateBanner(bannerText, themePreset, bannerFont);
-
-            writeBannerFile(buildTool, generateBanner, projectBasePath);
-
+            String generatedBanner = generateBanner(project, setting);
+            writeBannerFile(buildTool, generatedBanner, projectBasePath);
         } catch (Exception e) {
             log.error("Error while generating banner before build: ", e);
         }
@@ -70,16 +70,23 @@ public class SpringBannerBuildListener implements BuildManagerListener {
             throw new RuntimeException("Unable to determine build tool for project: " + project.getName());
     }
 
-    private String generateBanner(String bannerText, THEME_OPTION themePreset, String bannerFont) {
-        Theme theme = themePreset.getTheme();
+    private String generateBanner(Project project, AppSettings.Setting settings) {
+        String bannerText = settings.bannerText;
+        bannerText = StringUtil.isEmpty(bannerText) ? project.getName() : bannerText;
+        THEME_OPTION themePreset = settings.selectedTheme;
+        String bannerFont = settings.bannerFont;
+        ThemeConfig bannerThemeConfig;
         if (themePreset == THEME_OPTION.CUSTOM) {
-            AppSettings.State state =
-                    Objects.requireNonNull(AppSettings.getInstance().getState());
-            theme = new Theme(state.bannerFontColor, state.bannerBackground, state.bannerFontBold, state.additionalEffect);
+            bannerThemeConfig = settings.addBGColor ?
+                    new Theme(settings.bannerFontColor, settings.bannerBackground, settings.bannerFontBold, settings.additionalEffect).getBannerTheme():
+                    new Theme(settings.bannerFontColor, settings.bannerFontBold, settings.additionalEffect).getBannerTheme();
+        } else {
+            boolean isDarkTheme = EditorColorsManager.getInstance().isDarkEditor();
+            bannerThemeConfig = Theme.getBannerTheme(themePreset, isDarkTheme);
         }
         SpringBannerConfig springBannerConfig = SpringBannerConfig.builder()
                 .text(bannerText)
-                .bannerTheme(theme.getBannerTheme())
+                .bannerTheme(bannerThemeConfig)
                 .bannerFont(bannerFont)
                 .build();
         return SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
@@ -91,4 +98,4 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         MAVEN
     }
 
-    }
+}

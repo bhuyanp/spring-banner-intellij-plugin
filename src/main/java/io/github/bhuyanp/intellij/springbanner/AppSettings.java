@@ -6,12 +6,14 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import io.github.bhuyanp.intellij.springbanner.theme.THEME_OPTION;
+import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDOM_FONT;
 
@@ -25,12 +27,12 @@ import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDO
 
 @State(
         name = "io.github.bhuyanp.intellij.springbootbanner.AppSettings",
-        storages = @Storage("SpringBootBannerPlugin.xml")
+        storages = @Storage("funky-banner-plugin.xml")
 )
 final class AppSettings
         implements PersistentStateComponent<AppSettings.State> {
 
-    static class State {
+    static class Setting{
         @NonNls
         public String bannerText = "";
         @NonNls
@@ -38,15 +40,23 @@ final class AppSettings
         @NonNls
         public String bannerFont = RANDOM_FONT;
 
-
         //Custom Theme Settings
         public boolean bannerFontBold = false;
         @NonNls
         public List<Integer> bannerFontColor = List.of(230, 230, 230); // Default Off White
+        public boolean addBGColor = true;
         @NonNls
         public List<Integer> bannerBackground = List.of(45, 45, 45);  // Default dark gray
         @NonNls
         public Theme.ADDITIONAL_EFFECT additionalEffect = Theme.ADDITIONAL_EFFECT.NONE;
+    }
+    static class ProjectSpecificSetting extends Setting {
+        public boolean useProjectSpecificSetting = false;
+    }
+
+    static class State {
+        Setting globalSetting = new Setting();
+        Map<String, ProjectSpecificSetting> projectSpecificSettings = new HashMap<>();
     }
 
     private State myState = new State();
