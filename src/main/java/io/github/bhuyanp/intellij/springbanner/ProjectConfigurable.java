@@ -6,14 +6,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
-import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
@@ -55,23 +51,16 @@ final class ProjectConfigurable extends GlobalConfigurable {
         }
     }
 
-    private AppSettings.ProjectSpecificSetting getCurrentSettings() {
+    private ProjectSettings.State getCurrentSettings() {
         String projectName = getCurrentActiveProjectName();
-        AppSettings.State state = Objects.requireNonNull(AppSettings.getInstance().getState());
-        AppSettings.ProjectSpecificSetting projectSpecificSetting = state.projectSpecificSettings.get(projectName);
-        return projectSpecificSetting == null ? new AppSettings.ProjectSpecificSetting() : projectSpecificSetting;
+        ProjectSettings.State state = ProjectSettings.getInstance(projectName).getState();
+        return state == null ? new ProjectSettings.State() : state;
     }
 
     @Override
     public boolean isModified() {
-        AppSettings.ProjectSpecificSetting projectSpecificSetting = getCurrentSettings();
-        return !projectComponent.getBannerText().equalsIgnoreCase(projectSpecificSetting.bannerText) ||
-                projectComponent.getTheme() != projectSpecificSetting.selectedTheme ||
-                !projectComponent.getBannerFont().equalsIgnoreCase(projectSpecificSetting.bannerFont) ||
-                projectComponent.getBannerFontBold() != projectSpecificSetting.bannerFontBold ||
-                !equals(projectComponent.getBannerFontColor(), projectSpecificSetting.bannerFontColor) ||
-                !equals(projectComponent.getBannerBackground(), projectSpecificSetting.bannerBackground) ||
-                !projectComponent.getAdditionalEffect().equals(projectSpecificSetting.additionalEffect) ||
+        ProjectSettings.State projectSpecificSetting = getCurrentSettings();
+        return isModified(projectComponent, projectSpecificSetting) ||
                 projectComponent.getUseProjectSpecificSetting() != projectSpecificSetting.useProjectSpecificSetting;
     }
 
@@ -79,37 +68,19 @@ final class ProjectConfigurable extends GlobalConfigurable {
     @Override
     public void apply() {
         String currentActiveProjectName = getCurrentActiveProjectName();
-        if(StringUtil.isEmpty(currentActiveProjectName)){
+        if (StringUtil.isEmpty(currentActiveProjectName)) {
             log.warn("No active project found. Cannot apply project specific settings.");
             return;
         }
-        AppSettings.State state = Objects.requireNonNull(AppSettings.getInstance().getState());
-        AppSettings.ProjectSpecificSetting setting = getCurrentSettings();
-        setting.bannerText = projectComponent.getBannerText();
-        setting.selectedTheme = projectComponent.getTheme();
-        setting.bannerFont = projectComponent.getBannerFont();
-        setting.bannerFontBold = projectComponent.getBannerFontBold();
-        Color bannerFontColor = projectComponent.getBannerFontColor();
-        Color bannerBackgroundCOLOR = projectComponent.getBannerBackground();
-        setting.bannerFontColor = List.of(bannerFontColor.getRed(), bannerFontColor.getGreen(), bannerFontColor.getBlue());
-        setting.bannerBackground = List.of(bannerBackgroundCOLOR.getRed(), bannerBackgroundCOLOR.getGreen(), bannerBackgroundCOLOR.getBlue());
-        setting.additionalEffect = projectComponent.getAdditionalEffect();
-        setting.useProjectSpecificSetting = projectComponent.getUseProjectSpecificSetting();
-        state.projectSpecificSettings.put(currentActiveProjectName, setting);
+        ProjectSettings.State settings = getCurrentSettings();
+        apply(projectComponent, settings);
+        settings.useProjectSpecificSetting = projectComponent.getUseProjectSpecificSetting();
     }
 
     @Override
     public void reset() {
-        AppSettings.ProjectSpecificSetting projectSpecificSetting = getCurrentSettings();
-        projectComponent.setBannerText(projectSpecificSetting.bannerText);
-        projectComponent.setTheme(projectSpecificSetting.selectedTheme);
-        projectComponent.setBannerFont(projectSpecificSetting.bannerFont);
-        projectComponent.setBannerFontBold(projectSpecificSetting.bannerFontBold);
-        @NonNls List<Integer> bannerFontColor = projectSpecificSetting.bannerFontColor;
-        @NonNls List<Integer> bannerBackground = projectSpecificSetting.bannerBackground;
-        projectComponent.setBannerFontColor(new Color(bannerFontColor.get(0), bannerFontColor.get(1), bannerFontColor.get(2)));
-        projectComponent.setBannerBackground(new Color(bannerBackground.get(0), bannerBackground.get(1), bannerBackground.get(2)));
-        projectComponent.setAdditionalEffect(projectSpecificSetting.additionalEffect);
+        ProjectSettings.State projectSpecificSetting = getCurrentSettings();
+        reset(projectComponent, projectSpecificSetting);
         projectComponent.setUseProjectSpecificSetting(projectSpecificSetting.useProjectSpecificSetting);
     }
 

@@ -120,7 +120,7 @@ public final class Theme {
         ThemeConfig themeConfig = new ThemeConfig(
                 textColor,
                 backgroundColor,
-                getRandomAttribute(bannerEffects)
+                getRandomBannerEffect()
         );
         if (addBold) {
             themeConfig.addBold();
@@ -193,6 +193,7 @@ public final class Theme {
     private static final List<Attribute> bannerEffects = List.of(
             NONE(),
             NONE(),
+            NONE(),
             FRAMED(),
             ENCIRCLED(),
             DIM(),
@@ -200,8 +201,27 @@ public final class Theme {
             DESATURATED(),
             SATURATED(),
             SATURATED(),
+            SATURATED(),
             SATURATED()
     );
+
+    private static Attribute getRandomBannerEffect() {
+        Random random = new Random();
+        int randomNumber = random.nextInt(100);
+        if (randomNumber < 9) {
+            return FRAMED();
+        } else if (randomNumber < 18) {
+            return ENCIRCLED();
+        } else if (randomNumber < 30) {
+            return DIM();
+        } else if (randomNumber < 45) {
+            return DESATURATED();
+        } else if (randomNumber < 70) {
+            return NONE();
+        } else {
+            return SATURATED();
+        }
+    }
 
 
     private static Attribute getRandomAttribute(List<Attribute> attributes) {
@@ -215,43 +235,27 @@ public final class Theme {
     }
 
 
-    public static TextPadding getBannerPadding(String font) {
-        return switch (font) {
-            case "3d" -> new TextPadding(1, 4, 1, 3);
-            case "3dascii" -> new TextPadding(2, 2, 0, 2);
-            case "3ddiagonal" -> new TextPadding(0, 2, 1, 3);
-            case "5lineoblique" -> new TextPadding(0, 1, 1, 1);
-            case "ansiregular" -> new TextPadding(2, 4, 0, 4);
-            case "ansishadow" -> new TextPadding(1, 4, 0, 4);
-            case "basic" -> new TextPadding(2, 3, 0, 3);
-            case "block" -> new TextPadding(0, 3, 1, 3);
-            case "bolger" -> new TextPadding(1, 3, 1, 4);
-            case "braced" -> new TextPadding(1, 3, 0, 4);
-            case "broadway" -> new TextPadding(0, 3, 1, 3);
-            case "broadway_kb" -> new TextPadding(0, 3, 1, 3);
-            case "bulbhead" -> new TextPadding(0, 3, 1, 3);
-            case "calvins" -> new TextPadding(1, 4, 1, 4);
-            case "colossal" -> new TextPadding(1, 4, 1, 4);
-            case "elite" -> new TextPadding(1, 4, 1, 4);
-            case "epic" -> new TextPadding(1, 4, 1, 4);
-            case "georgia11" -> new TextPadding(0, 3, 1, 3);
-            case "lean" -> new TextPadding(0, 0, 1, 1);
-            case "nancyj" -> new TextPadding(1, 3, 1, 2);
-            case "poison" -> new TextPadding(0, 2, 0, 3);
-            case "soft" -> new TextPadding(0, 2, 1, 3);
-            case "starwars" -> new TextPadding(1, 2, 1, 2);
-            case "swan" -> new TextPadding(0, 4, 2, 4);
-            case "thin" -> new TextPadding(0, 4, 1, 4);
-            case "usaflag" -> new TextPadding(1, 3, 0, 2);
-            case "univers" -> new TextPadding(0, 3, 1, 3);
-            case "whimsy" -> new TextPadding(1, 4, 1, 4);
-            default -> new TextPadding(1, 3, 1, 3);
-        };
-    }
-
     public static void main(String[] args) {
         //printAllColors();
-        printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", true);
+        //printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", true);
+//        printAllFonts();
+        printFont("lean");
+    }
+
+    private static void printFont(String fontName) {
+        ThemeConfig bannerTheme1 = Theme.getBannerTheme(THEME_OPTION.SURPRISE_ME, true);
+        SpringBannerConfig springBannerConfig = SpringBannerConfig.builder()
+//                    .text("abcgjpqy")//gjpqy
+                    .text("abcde")//gjpqy
+                    .bannerFont(fontName)
+                    .bannerTheme(bannerTheme1).build();
+            String banner = SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
+            System.out.println(banner);
+            System.out.println("Font: "+fontName+" Banner Theme: " + bannerTheme1);
+
+    }
+    private static void printAllFonts() {
+        DEFAULT_FONTS.stream().distinct().sorted().forEach(Theme::printFont);
     }
 
     private static void printRandom(THEME_OPTION themeOption, String text, boolean isDark) {

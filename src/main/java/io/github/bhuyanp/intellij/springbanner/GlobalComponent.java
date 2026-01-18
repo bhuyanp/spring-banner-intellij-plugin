@@ -40,6 +40,8 @@ public class GlobalComponent {
     private final JBTextField bannerTextField = new JBTextField(20);
     private final ComboBox<String> themeComboBox = new ComboBox<>(Arrays.stream(THEME_OPTION.values()).map(Object::toString).toList().toArray(new String[0]));
     private final ComboBox<String> bannerFontComboBox = new ComboBox<>(FONT_OPTIONS.toArray(new String[0]));
+    private final JBCheckBox showCaptionCheckBox = new JBCheckBox("");
+
 
     private final JBCheckBox bannerFontBoldCheckBox = new JBCheckBox("Bold");
     private final ColorPanel bannerFontColorPicker = new ColorPanel();
@@ -63,6 +65,7 @@ public class GlobalComponent {
         themeComboBox.setLightWeightPopupEnabled(true);
         bannerFontComboBox.setFocusable(false);
         bannerFontComboBox.setLightWeightPopupEnabled(true);
+        showCaptionCheckBox.setFocusable(false);
         bannerFontBoldCheckBox.setFocusable(false);
         additionalEffectComboBox.setFocusable(false);
         val addBGColorCheckBoxActionListener = new GlobalComponent.AddBGColorCheckBoxActionListener();
@@ -74,6 +77,10 @@ public class GlobalComponent {
         val bannerTextTooltip = new JBLabel("Project name is used if left empty", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER);
         bannerTextTooltip.setBorder(JBUI.Borders.emptyLeft(tooltipOffset));
 
+
+        val showCaptionTooltip = new JBLabel("Spring Boot and JDK version shown underneath the banner", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER);
+        showCaptionTooltip.setBorder(JBUI.Borders.emptyLeft(tooltipOffset));
+
         mainSettingsForm = FormBuilder.createFormBuilder()
                 .addLabeledComponent(new JBLabel("Banner text:"), bannerTextField, 1, false)
                 .addComponentToRightColumn(bannerTextTooltip)
@@ -82,6 +89,9 @@ public class GlobalComponent {
                 .addComponentToRightColumn(themeTooltip)
                 .addVerticalGap(4)
                 .addLabeledComponent(new JBLabel("Banner font:"), bannerFontComboBox, 1, false)
+                .addVerticalGap(4)
+                .addLabeledComponent(new JBLabel("Display caption:"), showCaptionCheckBox, 1, false)
+                .addComponentToRightColumn(showCaptionTooltip)
                 .getPanel();
 
 
@@ -109,18 +119,19 @@ public class GlobalComponent {
                 .addComponentFillVertically(new JPanel(), 1)
                 .getPanel();
 
-        initBannerColorSelector(bannerFontColorPicker);
-        initBannerColorSelector(bannerBGColorPicker);
+        initBannerColorSelector(bannerFontColorPicker, new BannerFontColorPickerListener());
+        initBannerColorSelector(bannerBGColorPicker, new BannerBGColorPickerListener());
         myMainPanel = new JPanel(new VerticalFlowLayout());
         myMainPanel.add(mainSettingsForm);
         myMainPanel.add(customSettingsForm);
     }
 
 
-    private void initBannerColorSelector(ColorPanel colorPanel) {
+    private void initBannerColorSelector(ColorPanel colorPanel, ActionListener actionListener) {
         colorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         colorPanel.setFocusable(false);
         colorPanel.setOpaque(true);
+        colorPanel.addActionListener(actionListener);
     }
 
 
@@ -167,6 +178,14 @@ public class GlobalComponent {
 
     public void setBannerFont(@NotNull String bannerFont) {
         bannerFontComboBox.setSelectedItem(bannerFont);
+    }
+
+    public boolean getShowCaption() {
+        return showCaptionCheckBox.isSelected();
+    }
+
+    public void setShowCaption(boolean showCaption) {
+        showCaptionCheckBox.setSelected(showCaption);
     }
 
     public boolean getBannerFontBold() {
@@ -229,6 +248,22 @@ public class GlobalComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             showBannerBGColorPicker(addBGColorCheckBox.isSelected());
+        }
+    }
+
+    class BannerFontColorPickerListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            assert bannerFontColorPicker.getSelectedColor() != null;
+            bannerFontColorTooltip.setText(ColorNameUtil.getColorNameFromColor(bannerFontColorPicker.getSelectedColor()));
+        }
+    }
+
+    class BannerBGColorPickerListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            assert bannerBGColorPicker.getSelectedColor() != null;
+            bannerBGColorTooltip.setText(ColorNameUtil.getColorNameFromColor(bannerBGColorPicker.getSelectedColor()));
         }
     }
 

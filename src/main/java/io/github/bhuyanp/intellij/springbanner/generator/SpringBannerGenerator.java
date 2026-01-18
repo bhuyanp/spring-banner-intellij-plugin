@@ -4,7 +4,6 @@ package io.github.bhuyanp.intellij.springbanner.generator;
 import io.github.bhuyanp.intellij.springbanner.figlet.FigletBannerRenderer;
 import io.github.bhuyanp.intellij.springbanner.model.SpringBannerConfig;
 import io.github.bhuyanp.intellij.springbanner.theme.TextPadding;
-import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import io.github.bhuyanp.intellij.springbanner.theme.ThemeConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -14,8 +13,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import static io.github.bhuyanp.intellij.springbanner.ansi.Ansi.colorize;
-import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.DEFAULT_FONTS;
-import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDOM_FONT;
+import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SpringBannerGenerator {
@@ -29,10 +27,13 @@ public class SpringBannerGenerator {
 
         text = capitalizeProjectName(text);
         String banner = FigletBannerRenderer.SINGLETON.render(bannerFont, text);
-        TextPadding textPadding = null;
+        TextPadding textPadding;
         //For no background banners no left/right padding needed
-        if (bannerTheme.hasBackColor()) {
-            textPadding = Theme.getBannerPadding(bannerFont);
+        if (bannerTheme.hasBackColor()||bannerTheme.hasFrame()) {
+            textPadding = TextPadding.getBannerPadding(bannerFont);
+            if(FONTS_WITH_PADDING_CORRECTION.contains(bannerFont) && hasLowerCaseTallCharacter(text)){
+                textPadding = TextPadding.getBannerPadding(bannerFont+"-withtall");
+            }
             banner = textPadding.apply(banner);
         }
         banner = banner.lines()
@@ -44,6 +45,18 @@ public class SpringBannerGenerator {
         return banner;
     }
 
+
+    boolean hasLowerCaseTallCharacter(String text){
+        boolean hasL = false;
+        for (char c : text.toCharArray()) {
+            hasL = switch (c){
+                case 'g', 'j', 'p', 'q', 'y' -> true;
+                default -> false;
+            };
+            if(hasL)break;
+        }
+        return hasL;
+    }
 
 
     /**

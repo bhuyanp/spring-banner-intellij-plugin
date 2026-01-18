@@ -34,9 +34,11 @@ intellijPlatform {
         }
 
         changeNotes = """
-        - Caption underneath the banner now shows SpringBoot and JDK version<br/> 
-        - Doubled the randomization combinations for "Surprise Me" theme<br/>
-        - Banner.txt now being written to build folder for gradle builds<br/>
+        - Additional banner effect randomization improved<br/> 
+        - New fonts computer, doom, nancyjunderlined and stop introduced<br/> 
+        - Font paddings adjusted<br/> 
+        - Error when project root doesn't have a maven/gradle build file is handled<br/> 
+        - Issue with settings not getting saved resolved<br/> 
         """.trimIndent()
     }
 

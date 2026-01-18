@@ -11,9 +11,7 @@ import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDOM_FONT;
 
@@ -32,13 +30,15 @@ import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDO
 final class AppSettings
         implements PersistentStateComponent<AppSettings.State> {
 
-    static class Setting{
+    static class State{
         @NonNls
         public String bannerText = "";
         @NonNls
         public THEME_OPTION selectedTheme = THEME_OPTION.SURPRISE_ME;
         @NonNls
         public String bannerFont = RANDOM_FONT;
+
+        public boolean showCaption = true;
 
         //Custom Theme Settings
         public boolean bannerFontBold = false;
@@ -50,14 +50,8 @@ final class AppSettings
         @NonNls
         public Theme.ADDITIONAL_EFFECT additionalEffect = Theme.ADDITIONAL_EFFECT.NONE;
     }
-    static class ProjectSpecificSetting extends Setting {
-        public boolean useProjectSpecificSetting = false;
-    }
 
-    static class State {
-        Setting globalSetting = new Setting();
-        Map<String, ProjectSpecificSetting> projectSpecificSettings = new HashMap<>();
-    }
+
 
     private State myState = new State();
 
