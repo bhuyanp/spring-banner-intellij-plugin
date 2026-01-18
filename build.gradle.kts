@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.3"
+version = "2026.1.4"
 
 repositories {
     mavenCentral()
