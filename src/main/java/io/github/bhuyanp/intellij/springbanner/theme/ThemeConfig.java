@@ -22,6 +22,13 @@ public final class ThemeConfig extends AnsiFormat {
     public boolean hasBackColor(){
         return attributes.stream().map(Attribute::construct).anyMatch(attribute -> attribute.contains("BACK"));
     }
+
+    public boolean hasFrame(){
+        return attributes.stream().map(Attribute::construct)
+                .anyMatch(attribute -> attribute.contains("FRAMED")||attribute.contains("ENCIRCLED"));
+    }
+
+
     public void addBold(){
         super.addBold();
         if(attributes.size()==4)return;

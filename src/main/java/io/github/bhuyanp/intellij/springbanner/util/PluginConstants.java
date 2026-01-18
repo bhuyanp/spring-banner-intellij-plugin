@@ -28,21 +28,34 @@ public class PluginConstants {
             "bolger",
             "calvins",
             "colossal",
+            "computer",
             "cyberlarge",
+            "cyberlarge",
+            "doom",
             "elite",
             "elite",
+            "epic",
+            "fender",
             "georgia11",
             "lean",
-            "epic",
+            "lineblocks",
             "lineblocks",
             "nancyj",
+            "nancyjunderlined",
             "poison",
-            "starwars",
             "puffy",
+            "small",
+            "smslant",
+            "slant",
             "soft",
             "standard",
+            "starwars",
+            "stop",
+            "univers",
             "usaflag",
             "whimsy");
+    public static final List<String> FONTS_WITH_PADDING_CORRECTION =List.of("bigmoneyne", "doom", "lean","stop");
+
     public static final List<String> FONT_OPTIONS;
     static{
         FONT_OPTIONS = new ArrayList<>();

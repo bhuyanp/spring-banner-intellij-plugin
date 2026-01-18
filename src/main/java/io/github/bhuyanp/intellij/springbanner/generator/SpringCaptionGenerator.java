@@ -3,6 +3,7 @@ package io.github.bhuyanp.intellij.springbanner.generator;
 import io.github.bhuyanp.intellij.springbanner.model.SpringCaptionConfig;
 import io.github.bhuyanp.intellij.springbanner.theme.TextPadding;
 import io.github.bhuyanp.intellij.springbanner.theme.ThemeConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.stream.Collectors;
 
@@ -17,15 +18,30 @@ import static io.github.bhuyanp.intellij.springbanner.ansi.Ansi.colorize;
 public class SpringCaptionGenerator {
     public static final SpringCaptionGenerator INSTANCE = new SpringCaptionGenerator();
 
-    private static final String DEFAULT_CAPTION = """
-                Spring Boot      : %s
-                JDK              : %s
-                """;
+    private static final String CAPTION_TEMPLATE_SPRING_BOOT = "Spring Boot      : %s";
+    private static final String CAPTION_TEMPLATE_JDK =         "JDK              : %s";
+
     private static final String DEFAULT_SPACING = " ";
 
     public String getCaption(SpringCaptionConfig springCaptionConfig) {
+        String springBootCaption = "";
+        if(!StringUtils.isEmpty(springCaptionConfig.getSpringVersion())){
+            springBootCaption = CAPTION_TEMPLATE_SPRING_BOOT.formatted(springCaptionConfig.getSpringVersion());
+        }
+        String jdkCaption = "";
+        if(!StringUtils.isEmpty(springCaptionConfig.getJdkVersion())){
+            jdkCaption = CAPTION_TEMPLATE_JDK.formatted(springCaptionConfig.getJdkVersion());
+        }
+        if(StringUtils.isEmpty(springBootCaption) && StringUtils.isEmpty(jdkCaption)) return "";
 
-        String caption = DEFAULT_CAPTION.formatted(springCaptionConfig.getSpringVersion(), springCaptionConfig.getJdkVersion());
+        String caption = "";
+        if(StringUtils.isEmpty(springBootCaption)) {
+            caption = jdkCaption;
+        } else if(StringUtils.isEmpty(jdkCaption)) {
+            caption = springBootCaption;
+        } else {
+            caption = springBootCaption+System.lineSeparator()+jdkCaption;
+        }
 
         // Remove spaces around caption lines
         caption = caption.lines().map(String::trim).collect(Collectors.joining(System.lineSeparator()));

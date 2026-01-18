@@ -29,6 +29,7 @@
 <h3>Usage Notes</h3>
 - Running the application from terminal will NOT reflect the banner changes as the plugin depends on IDE's internal
 build system<br/>
+- Project root must have a mavel/gradle build file.<br/>
 - If you are using gradle, make sure to enable Build and run using IntelliJ under 'Settings->Build->Build Tools->Gradle'<br/>
 - If you choose to Build and run using Gradle instead of IntelliJ, then consider using the <a
         href="https://github.com/bhuyanp/spring-banner-gradle-plugin">Spring Banner Gradle Plugin</a> instead<br/>
@@ -48,6 +49,7 @@ Please consider <a href="https://buymeacoffee.com/bhuyanp">supporting</a> our ef
 
 </body>
 </html>
+
 
     ]]></description>
     <depends>com.intellij.modules.platform</depends>

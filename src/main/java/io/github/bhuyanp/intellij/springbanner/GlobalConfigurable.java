@@ -40,23 +40,26 @@ class GlobalConfigurable implements Configurable {
         return globalSettingsComponent.getPanel();
     }
 
-
-    private AppSettings.Setting getCurrentSettings() {
-        AppSettings.State state = Objects.requireNonNull(AppSettings.getInstance().getState());
-        AppSettings.Setting globalSetting = state.globalSetting;
-        return globalSetting == null ? new AppSettings.Setting() : globalSetting;
+    private AppSettings.State getCurrentSettings() {
+        return Objects.requireNonNull(AppSettings.getInstance().getState());
     }
+
     @Override
     public boolean isModified() {
-        AppSettings.Setting globalSetting = getCurrentSettings();
+        AppSettings.State globalSetting = getCurrentSettings();
+        return isModified(globalSettingsComponent,globalSetting);
+    }
+
+    protected boolean isModified(GlobalComponent globalSettingsComponent, AppSettings.State globalSetting) {
         return !globalSettingsComponent.getBannerText().equalsIgnoreCase(globalSetting.bannerText) ||
                 globalSettingsComponent.getTheme() != globalSetting.selectedTheme ||
                 !globalSettingsComponent.getBannerFont().equalsIgnoreCase(globalSetting.bannerFont) ||
+                globalSettingsComponent.getShowCaption() != globalSetting.showCaption ||
                 globalSettingsComponent.getBannerFontBold() != globalSetting.bannerFontBold ||
                 !equals(globalSettingsComponent.getBannerFontColor(), globalSetting.bannerFontColor) ||
-                globalSettingsComponent.getAddBGColor()!=globalSetting.addBGColor ||
+                globalSettingsComponent.getAddBGColor() != globalSetting.addBGColor ||
                 !equals(globalSettingsComponent.getBannerBackground(), globalSetting.bannerBackground) ||
-                !globalSettingsComponent.getAdditionalEffect().equals(globalSetting.additionalEffect);
+                globalSettingsComponent.getAdditionalEffect() != globalSetting.additionalEffect;
     }
 
     boolean equals(Color color, List<Integer> rgb) {
@@ -69,27 +72,35 @@ class GlobalConfigurable implements Configurable {
 
     @Override
     public void apply() {
-        AppSettings.State state = Objects.requireNonNull(AppSettings.getInstance().getState());
-        AppSettings.Setting globalSetting = getCurrentSettings();
-        globalSetting.bannerText = globalSettingsComponent.getBannerText();
-        globalSetting.selectedTheme = globalSettingsComponent.getTheme();
-        globalSetting.bannerFont = globalSettingsComponent.getBannerFont();
-        globalSetting.bannerFontBold = globalSettingsComponent.getBannerFontBold();
+        AppSettings.State globalSetting = getCurrentSettings();
+        apply(globalSettingsComponent, globalSetting);
+    }
+
+    protected void apply(GlobalComponent globalSettingsComponent, AppSettings.State settings){
+        settings.bannerText = globalSettingsComponent.getBannerText();
+        settings.selectedTheme = globalSettingsComponent.getTheme();
+        settings.bannerFont = globalSettingsComponent.getBannerFont();
+        settings.showCaption = globalSettingsComponent.getShowCaption();
+        settings.bannerFontBold = globalSettingsComponent.getBannerFontBold();
         Color bannerFontColor = globalSettingsComponent.getBannerFontColor();
         Color bannerBackgroundCOLOR = globalSettingsComponent.getBannerBackground();
-        globalSetting.bannerFontColor = List.of(bannerFontColor.getRed(), bannerFontColor.getGreen(), bannerFontColor.getBlue());
-        globalSetting.addBGColor = globalSettingsComponent.getAddBGColor();
-        globalSetting.bannerBackground = List.of(bannerBackgroundCOLOR.getRed(), bannerBackgroundCOLOR.getGreen(), bannerBackgroundCOLOR.getBlue());
-        globalSetting.additionalEffect = globalSettingsComponent.getAdditionalEffect();
-        state.globalSetting = globalSetting;
+        settings.bannerFontColor = List.of(bannerFontColor.getRed(), bannerFontColor.getGreen(), bannerFontColor.getBlue());
+        settings.addBGColor = globalSettingsComponent.getAddBGColor();
+        settings.bannerBackground = List.of(bannerBackgroundCOLOR.getRed(), bannerBackgroundCOLOR.getGreen(), bannerBackgroundCOLOR.getBlue());
+        settings.additionalEffect = globalSettingsComponent.getAdditionalEffect();
     }
 
     @Override
     public void reset() {
-        AppSettings.Setting globalSetting = getCurrentSettings();
+        AppSettings.State globalSetting = getCurrentSettings();
+        reset(globalSettingsComponent, globalSetting);
+    }
+
+    protected void reset(GlobalComponent globalSettingsComponent, AppSettings.State globalSetting) {
         globalSettingsComponent.setBannerText(globalSetting.bannerText);
         globalSettingsComponent.setTheme(globalSetting.selectedTheme);
         globalSettingsComponent.setBannerFont(globalSetting.bannerFont);
+        globalSettingsComponent.setShowCaption(globalSetting.showCaption);
         globalSettingsComponent.setBannerFontBold(globalSetting.bannerFontBold);
         @NonNls List<Integer> bannerFontColor = globalSetting.bannerFontColor;
         @NonNls List<Integer> bannerBackground = globalSetting.bannerBackground;
