@@ -17,13 +17,12 @@ import java.awt.event.ActionListener;
  * Supports creating and managing a {@link JPanel} for the Settings Dialog.
  */
 public class ProjectComponent extends GlobalComponent {
-    private final JBCheckBox useProjectSpecificSettingCheckBox = new JBCheckBox();
+    private final JBCheckBox useProjectSpecificSettingCheckBox = new JBCheckBox("Enable Project Specific Settings");
 
     public ProjectComponent() {
         super();
         useProjectSpecificSettingCheckBox.setFocusable(false);
-        CheckBoxActionListener checkBoxActionListener = new CheckBoxActionListener();
-        useProjectSpecificSettingCheckBox.addActionListener(checkBoxActionListener);
+        useProjectSpecificSettingCheckBox.addActionListener(new CheckBoxActionListener());
         Project activeProject = ProjectUtil.getActiveProject();
         String projectNameLabelString = "";
         if(activeProject!=null){
@@ -32,9 +31,8 @@ public class ProjectComponent extends GlobalComponent {
         JBLabel projectNameLabel = new JBLabel(projectNameLabelString, UIUtil.ComponentStyle.LARGE, UIUtil.FontColor.BRIGHTER);
         JPanel projectSpecificSettings = FormBuilder.createFormBuilder()
                 .addComponent(projectNameLabel)
-                .addVerticalGap(10)
-                .addLabeledComponent(new JBLabel("Use project specific settings:"), useProjectSpecificSettingCheckBox, 1, false)
-                .addVerticalGap(10)
+                .addVerticalGap(STANDARD_VERTICAL_GAP)
+                .addComponent(useProjectSpecificSettingCheckBox)
                 .getPanel();
         myMainPanel.add(projectSpecificSettings, 0);
     }
@@ -49,16 +47,24 @@ public class ProjectComponent extends GlobalComponent {
     }
 
     public void setUseProjectSpecificSetting(boolean useProjectSpecificSetting) {
-        mainSettingsForm.setVisible(useProjectSpecificSetting);
-        customSettingsForm.setVisible(useProjectSpecificSetting && showCustomSettings());
         useProjectSpecificSettingCheckBox.setSelected(useProjectSpecificSetting);
+        showSettings(useProjectSpecificSetting);
+    }
+
+    private void showSettings(boolean useProjectSpecificSetting) {
+        showBannerCheckBox.setVisible(useProjectSpecificSetting);
+        mainSettingsForm.setVisible(useProjectSpecificSetting && getShowBanner());
+        customBannerSettingsForm.setVisible(useProjectSpecificSetting && getShowBanner() && showCustomSettings());
+
+        showCaptionCheckBox.setVisible(useProjectSpecificSetting);
+        customCaptionSettingsForm.setVisible(useProjectSpecificSetting && getShowCaption());
     }
 
     class CheckBoxActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            mainSettingsForm.setVisible(useProjectSpecificSettingCheckBox.isSelected());
-            customSettingsForm.setVisible(useProjectSpecificSettingCheckBox.isSelected() && showCustomSettings());
+            boolean useProjectSpecificSetting = useProjectSpecificSettingCheckBox.isSelected();
+            showSettings(useProjectSpecificSetting);
         }
     }
 

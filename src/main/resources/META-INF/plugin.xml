@@ -81,7 +81,6 @@ Please consider <a href="https://buymeacoffee.com/bhuyanp">supporting</a> our ef
                 bundle="messages.SpringBanner"
                 key="sbb.plugin.setting.project"
                 nonDefaultProject="true"/>
-        <applicationService serviceImplementation="io.github.bhuyanp.intellij.springbanner.AppSettings"/>
     </extensions>
 
 </idea-plugin>

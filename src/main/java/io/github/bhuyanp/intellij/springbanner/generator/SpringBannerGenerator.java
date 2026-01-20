@@ -20,7 +20,7 @@ public class SpringBannerGenerator {
     public static final SpringBannerGenerator INSTANCE = new SpringBannerGenerator();
 
     public String getBanner(SpringBannerConfig springBannerConfig) {
-        String text = springBannerConfig.getText();
+        String text = springBannerConfig.getText().trim();
         ThemeConfig bannerTheme = springBannerConfig.getBannerTheme();
         String bannerFont = getBannerFont(springBannerConfig);
         if (text.isBlank()) return text;
@@ -39,8 +39,6 @@ public class SpringBannerGenerator {
         banner = banner.lines()
                 .map(line -> colorize(line, bannerTheme))
                 .collect(Collectors.joining(System.lineSeparator()));
-
-        banner = new TextPadding(1, 0, 1, 0).apply(banner);
 
         return banner;
     }

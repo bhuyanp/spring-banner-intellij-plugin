@@ -19,16 +19,19 @@ import io.github.bhuyanp.intellij.springbanner.writer.BannerWriter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.ivy.util.Message;
+import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.SPRING_BOOT_ARTIFACT_ID;
-import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.SPRING_BOOT_GROUP_ID;
+import static io.github.bhuyanp.intellij.springbanner.ansi.Attribute.NONE;
+import static io.github.bhuyanp.intellij.springbanner.ansi.Attribute.TEXT_COLOR;
+import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.*;
 
 
 /**
@@ -45,20 +48,35 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         BuildManagerListener.super.beforeBuildProcessStarted(project, sessionId);
         try {
             String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
-            ProjectSettings.State projectSettings = Objects.requireNonNull(ProjectSettings.getInstance(project.getName()).getState());
-            AppSettings.State settings = projectSettings.useProjectSpecificSetting?projectSettings:Objects.requireNonNull(AppSettings.getInstance().getState());
+            ProjectSettings.State projectSettings = Objects.requireNonNull(ProjectSettings.getState(project.getName()));
+            AppSettings.State settings = projectSettings.useProjectSpecificSetting ? projectSettings : Objects.requireNonNull(AppSettings.getInstance().getState());
 
-            BUILD_TOOL buildTool = determineBuildTool(project);
-            String generatedBanner = generateBanner(project, settings);
-            if(settings.showCaption) {
-                String generatedCaption = generateCaption(project, settings);
-                generatedBanner = generatedBanner + System.lineSeparator() + generatedCaption;
+            String generatedBanner = EMPTY;
+            if (settings.showBanner) {
+                generatedBanner = generateBanner(project, settings);
             }
-            writeBannerFile(buildTool, generatedBanner, projectBasePath);
+            String generatedCaption = EMPTY;
+            if (settings.showCaption) {
+                generatedCaption = generateCaption(project, settings);
+            }
+
+            String finalText;
+            if(StringUtils.isEmpty(generatedBanner) && StringUtils.isEmpty(generatedCaption)){
+                finalText = EMPTY;
+            } else if(!StringUtils.isEmpty(generatedBanner) && !StringUtils.isEmpty(generatedCaption)) {
+                finalText = generatedBanner + System.lineSeparator().repeat(2) + generatedCaption;
+            } else if(!StringUtils.isEmpty(generatedBanner)){
+                finalText = generatedBanner;
+            } else {
+                finalText = generatedCaption;
+            }
+
+            finalText = !StringUtils.isEmpty(finalText)?System.lineSeparator()+finalText+System.lineSeparator():finalText;
+            BUILD_TOOL buildTool = determineBuildTool(project);
+            writeBannerFile(buildTool, finalText, projectBasePath);
         } catch (Exception e) {
             log.error("Error while generating banner before build: ", e);
         }
-
     }
 
     private String generateBanner(Project project, AppSettings.State settings) {
@@ -84,11 +102,36 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         return SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
     }
 
+    private String generateCaption(Project project, AppSettings.State settings) {
+        THEME_OPTION themePreset = settings.selectedTheme;
+        SpringCaptionConfig springCaptionConfig;
+        SpringCaptionConfig.SpringCaptionConfigBuilder springCaptionConfigBuilder = SpringCaptionConfig.builder()
+                .springVersion(getSpringBootVersion(project))
+                .jdkVersion(getSDKVersion(project))
+                .showSpringVersion(settings.showSpringVersionInCaption)
+                .showJDKVersion(settings.showJDKVersionInCaption)
+                .captionText(settings.captionText);
+        if (themePreset == THEME_OPTION.CUSTOM) {
+            List<Integer> captionColor = settings.captionColor;
+            springCaptionConfig = springCaptionConfigBuilder
+                    .captionTheme(new ThemeConfig(TEXT_COLOR(captionColor.get(0), captionColor.get(1), captionColor.get(2)),
+                            NONE(), NONE()))
+                    .build();
+        } else {
+            boolean isDarkTheme = EditorColorsManager.getInstance().isDarkEditor();
+            springCaptionConfig = springCaptionConfigBuilder
+                    .captionTheme(Theme.getCaptionTheme(themePreset, isDarkTheme))
+                    .build();
+        }
+        return SpringCaptionGenerator.INSTANCE.getCaption(springCaptionConfig);
+    }
+
     private static void writeBannerFile(BUILD_TOOL buildTool, String generatedBanner, String projectBasePath) {
         switch (buildTool) {
             case MAVEN -> BannerWriter.of(BannerWriter.WRITER_TYPE.MAVEN).write(generatedBanner, projectBasePath);
             case GRADLE -> BannerWriter.of(BannerWriter.WRITER_TYPE.GRADLE).write(generatedBanner, projectBasePath);
-            case UNDETECTED -> Message.info("No Gradle or Maven build scripts detected at the project root. Spring Boot banner not generated.");
+            case UNDETECTED ->
+                    Message.info("No Gradle or Maven build scripts detected at the project root. Spring Boot banner not generated.");
         }
     }
 
@@ -106,17 +149,6 @@ public class SpringBannerBuildListener implements BuildManagerListener {
             return BUILD_TOOL.UNDETECTED;
     }
 
-
-    private String generateCaption(Project project, AppSettings.State settings) {
-        THEME_OPTION themePreset = settings.selectedTheme;
-        boolean isDarkTheme = EditorColorsManager.getInstance().isDarkEditor();
-        SpringCaptionConfig springCaptionConfig = SpringCaptionConfig.builder()
-                .springVersion(getSpringBootVersion(project))
-                .jdkVersion(getSDKVersion(project))
-                .captionTheme(Theme.getCaptionTheme(themePreset, isDarkTheme))
-                .build();
-        return SpringCaptionGenerator.INSTANCE.getCaption(springCaptionConfig);
-    }
 
     enum BUILD_TOOL {
         GRADLE,

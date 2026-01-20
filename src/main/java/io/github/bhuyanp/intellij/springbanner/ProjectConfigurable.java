@@ -53,7 +53,7 @@ final class ProjectConfigurable extends GlobalConfigurable {
 
     private ProjectSettings.State getCurrentSettings() {
         String projectName = getCurrentActiveProjectName();
-        ProjectSettings.State state = ProjectSettings.getInstance(projectName).getState();
+        ProjectSettings.State state = ProjectSettings.getState(projectName);
         return state == null ? new ProjectSettings.State() : state;
     }
 

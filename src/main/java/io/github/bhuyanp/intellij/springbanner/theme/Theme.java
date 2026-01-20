@@ -99,7 +99,12 @@ public final class Theme {
         return switch (selectedTheme) {
             case DARK -> DARK.captionTheme;
             case LIGHT -> LIGHT.captionTheme;
-            case AUTO, CUSTOM, SURPRISE_ME -> isDarkMode ? DARK.captionTheme : LIGHT.captionTheme;
+            case SURPRISE_ME -> new ThemeConfig(
+                    isDarkMode ? getRandomAttribute(brightTextColors) : getRandomAttribute(darkTextColors),
+                    NONE(),
+                    NONE());
+            case AUTO -> isDarkMode ? DARK.captionTheme : LIGHT.captionTheme;
+            case CUSTOM -> throw new IllegalArgumentException("Custom theme is not supported through factory method.");
         };
     }
 
@@ -160,7 +165,8 @@ public final class Theme {
             BRIGHT_BLUE_TEXT(),
             BRIGHT_MAGENTA_TEXT(),
             BRIGHT_CYAN_TEXT(),
-            BRIGHT_WHITE_TEXT()
+            BRIGHT_WHITE_TEXT(),
+            TEXT_COLOR(112, 255, 221)//Aqua marine
     );
 
     private static final List<Attribute> brightBackgroundColors = List.of(
@@ -186,7 +192,8 @@ public final class Theme {
             TEXT_COLOR(56, 58, 81),    //Bright Gray
             TEXT_COLOR(26, 27, 31),   //Shark
             TEXT_COLOR(33, 10, 14),  //Coffee Bean
-            TEXT_COLOR(42, 27, 8)   //Graphite
+            TEXT_COLOR(42, 27, 8),   //Graphite
+            TEXT_COLOR(0, 110, 110)
     );
 
 
@@ -236,24 +243,25 @@ public final class Theme {
 
 
     public static void main(String[] args) {
-        //printAllColors();
+        printAllColors();
         //printRandom(THEME_OPTION.SURPRISE_ME, "Some Text", true);
 //        printAllFonts();
-        printFont("lean");
+//        printFont("lean");
     }
 
     private static void printFont(String fontName) {
         ThemeConfig bannerTheme1 = Theme.getBannerTheme(THEME_OPTION.SURPRISE_ME, true);
         SpringBannerConfig springBannerConfig = SpringBannerConfig.builder()
 //                    .text("abcgjpqy")//gjpqy
-                    .text("abcde")//gjpqy
-                    .bannerFont(fontName)
-                    .bannerTheme(bannerTheme1).build();
-            String banner = SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
-            System.out.println(banner);
-            System.out.println("Font: "+fontName+" Banner Theme: " + bannerTheme1);
+                .text("abcde")//gjpqy
+                .bannerFont(fontName)
+                .bannerTheme(bannerTheme1).build();
+        String banner = SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
+        System.out.println(banner);
+        System.out.println("Font: " + fontName + " Banner Theme: " + bannerTheme1);
 
     }
+
     private static void printAllFonts() {
         DEFAULT_FONTS.stream().distinct().sorted().forEach(Theme::printFont);
     }

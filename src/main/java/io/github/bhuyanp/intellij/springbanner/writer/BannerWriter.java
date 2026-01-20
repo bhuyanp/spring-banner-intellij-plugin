@@ -21,7 +21,7 @@ public abstract class BannerWriter {
 
     public void write(String bannerText, String projectBasePath) {
         try {
-            if (StringUtil.isEmpty(bannerText) || StringUtil.isEmpty(projectBasePath)) return;
+            if (StringUtil.isEmpty(projectBasePath)) return;
             List<List<String>> targetDirs = getTargetDirectories(projectBasePath);
             targetDirs.forEach(targetDir -> {
                 try {

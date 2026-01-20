@@ -11,6 +11,9 @@ import java.util.List;
  */
 public class PluginConstants {
 
+    public static final String SPACE = " ";
+    public static final String EMPTY = "";
+
     public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
     public static final String SPRING_BOOT_ARTIFACT_ID = "spring-boot-starter";
     public static final String RANDOM_FONT = "-- Random --";
