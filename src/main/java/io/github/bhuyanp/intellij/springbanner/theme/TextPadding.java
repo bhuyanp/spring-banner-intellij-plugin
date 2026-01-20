@@ -56,7 +56,7 @@ public class TextPadding {
             case "bulbhead" -> new TextPadding(0, 3, 1, 3);
             case "calvins" -> new TextPadding(1, 4, 1, 4);
             case "colossal" -> new TextPadding(1, 4, 1, 4);
-            case "computer" -> new TextPadding(1, 1, 0, 2);
+            case "computer" -> new TextPadding(1, 2, 0, 3);
             case "doom" -> new TextPadding(1, 3, 0, 3);
             case "elite" -> new TextPadding(1, 4, 1, 4);
             case "epic" -> new TextPadding(1, 4, 1, 4);

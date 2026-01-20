@@ -14,6 +14,9 @@ import lombok.ToString;
 @ToString
 public class SpringCaptionConfig {
     private String springVersion;
+    private boolean showSpringVersion;
     private String jdkVersion;
+    private boolean showJDKVersion;
     private ThemeConfig captionTheme;
+    private String captionText;
 }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.4"
+version = "2026.1.5"
 
 repositories {
     mavenCentral()
@@ -34,11 +34,12 @@ intellijPlatform {
         }
 
         changeNotes = """
-        - Additional banner effect randomization improved<br/> 
-        - New fonts computer, doom, nancyjunderlined and stop introduced<br/> 
-        - Font paddings adjusted<br/> 
-        - Error when project root doesn't have a maven/gradle build file is handled<br/> 
-        - Issue with settings not getting saved resolved<br/> 
+        - Added granular control over generated caption<br/> 
+        - Freeform caption editor gives full control over caption text<br/> 
+        - Modernized tools window layout<br/> 
+        - Ability to turn on/off banners, captions or both<br/> 
+        - Randomized caption color with "Surprise Me" theme<br/> 
+        - Ability to customize caption color with Custom theme<br/> 
         """.trimIndent()
     }
 

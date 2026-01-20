@@ -37,12 +37,17 @@ final class ProjectSettings
 
 
 
-    static ProjectSettings getInstance(String projectName) {
-        return Arrays.stream(Objects.requireNonNull(ProjectManager.getInstanceIfCreated()).getOpenProjects())
-                .filter(project -> projectName.equalsIgnoreCase(project.getName()))
-                .findAny()
-                .orElseThrow()
-                .getService(ProjectSettings.class);
+    static ProjectSettings.State getState(String projectName) {
+        try {
+            return Arrays.stream(Objects.requireNonNull(ProjectManager.getInstance()).getOpenProjects())
+                    .filter(project -> projectName.equalsIgnoreCase(project.getName()))
+                    .findAny()
+                    .orElseThrow()
+                    .getService(ProjectSettings.class)
+                    .getState();
+        } catch (Exception e){
+            return new ProjectSettings.State();
+        }
     }
 
     @Override
