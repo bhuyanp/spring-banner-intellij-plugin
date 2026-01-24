@@ -29,8 +29,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.KEY_JDK_VERSION;
-import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.KEY_SPRING_VERSION;
+import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.*;
 import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.*;
 
 /**
@@ -124,7 +123,10 @@ public class GlobalComponent {
                 BorderFactory.createLineBorder(JBColor.LIGHT_GRAY, 1, true),
                 BorderFactory.createEmptyBorder(TEXT_AREA_PADDING, TEXT_AREA_PADDING, TEXT_AREA_PADDING, TEXT_AREA_PADDING)));
 
-        val captionTextTooltip = getToolTipWithOffset("Freeform caption text. JDK and Spring Boot versions available as " + KEY_JDK_VERSION + " and " + KEY_SPRING_VERSION);
+        val captionTextTooltip1 = getToolTipWithOffset("Freeform caption text.");
+        val captionTextTooltip2 = getToolTipWithOffset("App version available as " + KEY_APP_VERSION );
+        val captionTextTooltip3 = getToolTipWithOffset("Spring Boot version available as " + KEY_SPRING_VERSION );
+        val captionTextTooltip4 = getToolTipWithOffset("JDK version available as " + KEY_JDK_VERSION );
         val captionFontColorPickerPanel = initBannerColorSelector(captionColorPicker, captionColorTooltip, new CaptionColorPickerListener());
 
         customCaptionSettingsForm = FormBuilder.createFormBuilder()
@@ -138,7 +140,10 @@ public class GlobalComponent {
                 .addLabeledComponent(getLabelWithIndent("Bullet style:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), captionBulletComboBox)
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
                 .addLabeledComponent(getLabelWithIndent("Caption text:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), captionTextArea)
-                .addComponentToRightColumn(captionTextTooltip)
+                .addComponentToRightColumn(captionTextTooltip1)
+                .addComponentToRightColumn(captionTextTooltip2)
+                .addComponentToRightColumn(captionTextTooltip3)
+                .addComponentToRightColumn(captionTextTooltip4)
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
                 .addLabeledComponent(captionColorLabel, captionFontColorPickerPanel)
                 .addComponentToRightColumn(captionColorTooltip)

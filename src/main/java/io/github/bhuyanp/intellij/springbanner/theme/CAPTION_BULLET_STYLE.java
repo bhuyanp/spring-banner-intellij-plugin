@@ -18,6 +18,7 @@ public enum CAPTION_BULLET_STYLE {
     PIPE("|", false),
     GTA("->", false),
     POUND("#", false),
+    DASH("-", false),
     DOLLAR("$", false),
     RANDOM("Random", false),
     NONE("None", false);

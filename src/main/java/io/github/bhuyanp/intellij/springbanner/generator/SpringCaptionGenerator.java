@@ -83,7 +83,7 @@ public class SpringCaptionGenerator {
             captionBulletStyle = captionBulletStyles.get(randomCaptionIndex);
         }
         String captionBullet = switch (captionBulletStyle) {
-            case GT, PIPE, GTA, POUND, DOLLAR -> captionBulletStyle.getLabel() + SPACE;
+            case GT, PIPE, GTA, POUND, DOLLAR, DASH -> captionBulletStyle.getLabel() + SPACE;
             case NONE,RANDOM -> BLANK;
         };
 
