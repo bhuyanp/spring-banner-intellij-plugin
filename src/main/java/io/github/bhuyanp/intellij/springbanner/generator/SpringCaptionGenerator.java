@@ -56,6 +56,7 @@ public class SpringCaptionGenerator {
         String captionText = springCaptionConfig.getCaptionText().trim();
         if (!StringUtils.isEmpty(captionText)) {
             caption += captionText
+                    .replace(KEY_APP_VERSION, appVersion)
                     .replace(KEY_SPRING_VERSION, springVersion)
                     .replace(KEY_JDK_VERSION, jdkVersion);
         }
