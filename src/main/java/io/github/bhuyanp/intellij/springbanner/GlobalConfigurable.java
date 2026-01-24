@@ -60,8 +60,10 @@ class GlobalConfigurable implements Configurable {
                 !matchColor(globalSettingsComponent.getBannerBackground(), globalSetting.bannerBackground) ||
                 globalSettingsComponent.getAdditionalEffect() != globalSetting.additionalEffect ||
                 globalSettingsComponent.getShowCaption() != globalSetting.showCaption ||
+                globalSettingsComponent.getShowAppVersion() != globalSetting.showAppVersion ||
                 globalSettingsComponent.getShowSpringVersion() != globalSetting.showSpringVersionInCaption ||
                 globalSettingsComponent.getShowJDKVersion() != globalSetting.showJDKVersionInCaption ||
+                globalSettingsComponent.getCaptionBulletStyle() != globalSetting.captionBulletStyle ||
                 !globalSettingsComponent.getCaptionText().equalsIgnoreCase(globalSetting.captionText) ||
                 !matchColor(globalSettingsComponent.getCaptionColor(), globalSetting.captionColor);
     }
@@ -92,8 +94,10 @@ class GlobalConfigurable implements Configurable {
         settings.additionalEffect = globalSettingsComponent.getAdditionalEffect();
 
         settings.showCaption = globalSettingsComponent.getShowCaption();
+        settings.showAppVersion = globalSettingsComponent.getShowAppVersion();
         settings.showSpringVersionInCaption = globalSettingsComponent.getShowSpringVersion();
         settings.showJDKVersionInCaption = globalSettingsComponent.getShowJDKVersion();
+        settings.captionBulletStyle = globalSettingsComponent.getCaptionBulletStyle();
         settings.captionText = globalSettingsComponent.getCaptionText();
         settings.captionColor = getColorRGB(globalSettingsComponent.getCaptionColor());
     }
@@ -124,8 +128,10 @@ class GlobalConfigurable implements Configurable {
         globalSettingsComponent.setAdditionalEffect(globalSetting.additionalEffect);
 
         globalSettingsComponent.setShowCaption(globalSetting.showCaption);
+        globalSettingsComponent.setShowAppVersion(globalSetting.showAppVersion);
         globalSettingsComponent.setShowSpringVersion(globalSetting.showSpringVersionInCaption);
         globalSettingsComponent.setShowJDKVersion(globalSetting.showJDKVersionInCaption);
+        globalSettingsComponent.setCaptionBulletStyle(globalSetting.captionBulletStyle);
         globalSettingsComponent.setCaptionText(globalSetting.captionText);
         globalSettingsComponent.setCaptionColor(getColor(globalSetting.captionColor));
     }

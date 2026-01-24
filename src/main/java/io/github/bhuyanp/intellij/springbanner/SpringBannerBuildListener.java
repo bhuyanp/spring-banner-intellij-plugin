@@ -19,9 +19,12 @@ import io.github.bhuyanp.intellij.springbanner.writer.BannerWriter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.ivy.util.Message;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -43,41 +46,48 @@ import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.*;
 @Slf4j
 public class SpringBannerBuildListener implements BuildManagerListener {
 
+    private static final String POM_XML = "pom.xml";
+    private static final String BUILD_GRADLE = "build.gradle";
+    private static final String BUILD_GRADLE_KTS = "build.gradle.kts";
+
     @Override
-    public void beforeBuildProcessStarted(@NotNull Project project, @NotNull UUID sessionId) {
+    public void buildStarted(@NotNull Project project, @NotNull UUID sessionId, boolean isAutomake) {
+        if(isAutomake) return;
         BuildManagerListener.super.beforeBuildProcessStarted(project, sessionId);
         try {
             String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
             ProjectSettings.State projectSettings = Objects.requireNonNull(ProjectSettings.getState(project.getName()));
             AppSettings.State settings = projectSettings.useProjectSpecificSetting ? projectSettings : Objects.requireNonNull(AppSettings.getInstance().getState());
 
-            String generatedBanner = EMPTY;
+            BUILD_TOOL buildTool = determineBuildTool(project);
+            if(buildTool==BUILD_TOOL.UNDETECTED) return;
+
+            String generatedBanner = BLANK;
             if (settings.showBanner) {
                 generatedBanner = generateBanner(project, settings);
             }
-            String generatedCaption = EMPTY;
+            String generatedCaption = BLANK;
             if (settings.showCaption) {
-                generatedCaption = generateCaption(project, settings);
+                generatedCaption = generateCaption(project, settings, buildTool);
             }
 
             String finalText;
-            if(StringUtils.isEmpty(generatedBanner) && StringUtils.isEmpty(generatedCaption)){
-                finalText = EMPTY;
-            } else if(!StringUtils.isEmpty(generatedBanner) && !StringUtils.isEmpty(generatedCaption)) {
+            if (StringUtils.isEmpty(generatedBanner) && StringUtils.isEmpty(generatedCaption)) {
+                finalText = BLANK;
+            } else if (!StringUtils.isEmpty(generatedBanner) && !StringUtils.isEmpty(generatedCaption)) {
                 finalText = generatedBanner + System.lineSeparator().repeat(2) + generatedCaption;
-            } else if(!StringUtils.isEmpty(generatedBanner)){
+            } else if (!StringUtils.isEmpty(generatedBanner)) {
                 finalText = generatedBanner;
             } else {
                 finalText = generatedCaption;
             }
 
-            finalText = !StringUtils.isEmpty(finalText)?System.lineSeparator()+finalText+System.lineSeparator():finalText;
-            BUILD_TOOL buildTool = determineBuildTool(project);
+            finalText = !StringUtils.isEmpty(finalText) ? System.lineSeparator() + finalText + System.lineSeparator() : finalText;
             writeBannerFile(buildTool, finalText, projectBasePath);
         } catch (Exception e) {
-            log.error("Error while generating banner before build: ", e);
         }
     }
+
 
     private String generateBanner(Project project, AppSettings.State settings) {
         String bannerText = settings.bannerText;
@@ -102,26 +112,25 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         return SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
     }
 
-    private String generateCaption(Project project, AppSettings.State settings) {
+    private String generateCaption(Project project, AppSettings.State settings, BUILD_TOOL buildTool) {
         THEME_OPTION themePreset = settings.selectedTheme;
-        SpringCaptionConfig springCaptionConfig;
-        SpringCaptionConfig.SpringCaptionConfigBuilder springCaptionConfigBuilder = SpringCaptionConfig.builder()
-                .springVersion(getSpringBootVersion(project))
-                .jdkVersion(getSDKVersion(project))
-                .showSpringVersion(settings.showSpringVersionInCaption)
-                .showJDKVersion(settings.showJDKVersionInCaption)
-                .captionText(settings.captionText);
+        SpringCaptionConfig springCaptionConfig = new SpringCaptionConfig(settings);
+
+        springCaptionConfig.setAppVersion(getAppVersion(project, buildTool));
+        springCaptionConfig.setSpringVersion(getSpringBootVersion(project));
+        springCaptionConfig.setJdkVersion(getSDKVersion(project));
+
+
         if (themePreset == THEME_OPTION.CUSTOM) {
             List<Integer> captionColor = settings.captionColor;
-            springCaptionConfig = springCaptionConfigBuilder
-                    .captionTheme(new ThemeConfig(TEXT_COLOR(captionColor.get(0), captionColor.get(1), captionColor.get(2)),
-                            NONE(), NONE()))
-                    .build();
+            springCaptionConfig.setCaptionTheme(
+                    new ThemeConfig(TEXT_COLOR(captionColor.get(0), captionColor.get(1), captionColor.get(2)),
+                            NONE(),
+                            NONE())
+            );
         } else {
             boolean isDarkTheme = EditorColorsManager.getInstance().isDarkEditor();
-            springCaptionConfig = springCaptionConfigBuilder
-                    .captionTheme(Theme.getCaptionTheme(themePreset, isDarkTheme))
-                    .build();
+            springCaptionConfig.setCaptionTheme(Theme.getCaptionTheme(themePreset, isDarkTheme));
         }
         return SpringCaptionGenerator.INSTANCE.getCaption(springCaptionConfig);
     }
@@ -129,20 +138,22 @@ public class SpringBannerBuildListener implements BuildManagerListener {
     private static void writeBannerFile(BUILD_TOOL buildTool, String generatedBanner, String projectBasePath) {
         switch (buildTool) {
             case MAVEN -> BannerWriter.of(BannerWriter.WRITER_TYPE.MAVEN).write(generatedBanner, projectBasePath);
-            case GRADLE -> BannerWriter.of(BannerWriter.WRITER_TYPE.GRADLE).write(generatedBanner, projectBasePath);
+            case GRADLE_GROOVY, GRADLE_KOTLIN -> BannerWriter.of(BannerWriter.WRITER_TYPE.GRADLE).write(generatedBanner, projectBasePath);
             case UNDETECTED ->
-                    Message.info("No Gradle or Maven build scripts detected at the project root. Spring Boot banner not generated.");
+                    Message.info("No Gradle or Maven build scripts detected at project root. Spring Boot banner not generated.");
         }
     }
 
 
     private BUILD_TOOL determineBuildTool(Project project) {
         String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
-        Path gradleScript = Path.of(projectBasePath, "build.gradle");
-        Path gradleScriptKotlinDSL = Path.of(projectBasePath, "build.gradle.kts");
-        Path mavenScript = Path.of(projectBasePath, "pom.xml");
-        if (Files.exists(gradleScript) || Files.exists(gradleScriptKotlinDSL))
-            return BUILD_TOOL.GRADLE;
+        Path gradleScript = Path.of(projectBasePath, BUILD_GRADLE);
+        Path gradleScriptKotlinDSL = Path.of(projectBasePath, BUILD_GRADLE_KTS);
+        Path mavenScript = Path.of(projectBasePath, POM_XML);
+        if (Files.exists(gradleScript))
+            return BUILD_TOOL.GRADLE_GROOVY;
+        else if(Files.exists(gradleScriptKotlinDSL))
+            return BUILD_TOOL.GRADLE_KOTLIN;
         else if (Files.exists(mavenScript))
             return BUILD_TOOL.MAVEN;
         else
@@ -151,7 +162,8 @@ public class SpringBannerBuildListener implements BuildManagerListener {
 
 
     enum BUILD_TOOL {
-        GRADLE,
+        GRADLE_GROOVY,
+        GRADLE_KOTLIN,
         MAVEN,
         UNDETECTED
     }
@@ -177,6 +189,49 @@ public class SpringBannerBuildListener implements BuildManagerListener {
         Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
         assert projectSdk != null;
         return projectSdk.getVersionString();
+    }
+
+    private String getAppVersion(Project project, BUILD_TOOL buildTool) {
+        String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path missing");
+        Path mavenScript = Path.of(projectBasePath, POM_XML);
+        Path gradleScript = Path.of(projectBasePath, BUILD_GRADLE);
+        Path gradleKotlinScript = Path.of(projectBasePath, BUILD_GRADLE_KTS);
+
+        return switch (buildTool){
+            case MAVEN ->getMavenAppVersion(mavenScript);
+            case GRADLE_KOTLIN -> getGradleAppVersion(gradleKotlinScript);
+            case GRADLE_GROOVY -> getGradleAppVersion(gradleScript);
+            case UNDETECTED -> BLANK;
+        };
+    }
+
+    private static String getMavenAppVersion(Path mavenScript) {
+        try {
+            MavenXpp3Reader reader = new MavenXpp3Reader();
+            Model model = reader.read(new FileReader(mavenScript.toFile()));
+            return model.getVersion();
+        } catch (Exception e) {
+            return BLANK;
+        }
+    }
+
+    private String getGradleAppVersion(Path gradleScriptPath) {
+        try {
+            String scriptContent = Files.readString(gradleScriptPath);
+            String versionLine =  scriptContent.lines()
+                    .filter(line->line.contains("version") && line.contains("="))
+                    .findFirst()
+                    .orElse(BLANK);
+            if(versionLine.equals(BLANK)) return BLANK;
+            return versionLine
+                    .replace("version", BLANK)
+                    .replace("\"", BLANK)
+                    .replace(" ", BLANK)
+                    .replace("=", BLANK)
+                    .replace("'", BLANK);
+        } catch (Exception e) {
+            return BLANK;
+        }
     }
 
 }
