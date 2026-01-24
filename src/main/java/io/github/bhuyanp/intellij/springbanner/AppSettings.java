@@ -7,6 +7,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import io.github.bhuyanp.intellij.springbanner.theme.CAPTION_BULLET_STYLE;
 import io.github.bhuyanp.intellij.springbanner.theme.THEME_OPTION;
 import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import org.jetbrains.annotations.NonNls;
@@ -14,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.EMPTY;
+import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.BLANK;
 import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDOM_FONT;
 
 
@@ -30,13 +31,13 @@ import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.RANDO
         name = "io.github.bhuyanp.intellij.springbootbanner.AppSettings",
         storages = @Storage("funky-banner-plugin.xml")
 )
-final class AppSettings
+public final class AppSettings
         implements PersistentStateComponent<AppSettings.State> {
 
-    static class State {
+    public static class State {
         public boolean showBanner = true;
         @NonNls
-        public String bannerText = EMPTY;
+        public String bannerText = BLANK;
         @NonNls
         public THEME_OPTION selectedTheme = THEME_OPTION.SURPRISE_ME;
         @NonNls
@@ -57,9 +58,11 @@ final class AppSettings
         public boolean showCaption = true;
         @NonNls
         public List<Integer> captionColor = List.of(0, 110, 110);
+        public boolean showAppVersion = false;
         public boolean showSpringVersionInCaption = true;
         public boolean showJDKVersionInCaption = true;
-        public String captionText = EMPTY;
+        public CAPTION_BULLET_STYLE captionBulletStyle = CAPTION_BULLET_STYLE.GT;
+        public String captionText = BLANK;
     }
 
 

@@ -13,11 +13,11 @@ import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.github.bhuyanp.intellij.springbanner.theme.CAPTION_BULLET_STYLE;
 import io.github.bhuyanp.intellij.springbanner.theme.THEME_OPTION;
 import io.github.bhuyanp.intellij.springbanner.theme.Theme;
 import io.github.bhuyanp.intellij.springbanner.util.ColorNameUtil;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.HorizontalLayout;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,8 +29,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.KEY_JDK_VERSION;
-import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.KEY_SPRING_VERSION;
+import static io.github.bhuyanp.intellij.springbanner.generator.SpringCaptionGenerator.*;
 import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.*;
 
 /**
@@ -52,7 +51,7 @@ public class GlobalComponent {
 
     final JBCheckBox showBannerCheckBox = new JBCheckBox("Generate Banner");
     private final JBTextField bannerTextField = new JBTextField(20);
-    private final ComboBox<String> themeComboBox = new ComboBox<>(Arrays.stream(THEME_OPTION.values()).map(Object::toString).toList().toArray(new String[0]));
+    private final ComboBox<THEME_OPTION> themeComboBox = new ComboBox<>(THEME_OPTION.values());
     private final JBLabel themeTooltip = new JBLabel("", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER);
     private final ComboBox<String> bannerFontComboBox = new ComboBox<>(FONT_OPTIONS.toArray(new String[0]));
 
@@ -66,9 +65,13 @@ public class GlobalComponent {
     private final ComboBox<Theme.ADDITIONAL_EFFECT> additionalEffectComboBox = new ComboBox<>(Theme.ADDITIONAL_EFFECT.values());
 
     final JBCheckBox showCaptionCheckBox = new JBCheckBox("Generate Caption");
+    private final JBCheckBox showAppVersionCheckBox = new JBCheckBox();
     private final JBCheckBox showSpringVersionCheckBox = new JBCheckBox();
     private final JBCheckBox showJDKVersionCheckBox = new JBCheckBox();
-    private final JBTextArea captionTextArea = new JBTextArea(4,20);
+    private final ComboBox<CAPTION_BULLET_STYLE> captionBulletComboBox = new ComboBox<>(CAPTION_BULLET_STYLE.values());
+
+    private final JBTextArea captionTextArea = new JBTextArea(4, 20);
+
 
     private final JBLabel captionColorLabel = getLabelWithIndent("Caption color:", SECONDARY_FORM_LABEL_MAX_LENGTH);
     private final ColorPanel captionColorPicker = new ColorPanel();
@@ -81,7 +84,7 @@ public class GlobalComponent {
         themeTooltip.setBorder(JBUI.Borders.emptyLeft(tooltipOffset));
         bannerFontComboBox.setLightWeightPopupEnabled(true);
         addBGColorCheckBox.addActionListener(new AddBGColorCheckBoxActionListener());
-        setFocusable(false, showBannerCheckBox, themeComboBox, bannerFontComboBox, bannerFontBoldCheckBox, additionalEffectComboBox, addBGColorCheckBox);
+        makeComponentsNonFocusable(showBannerCheckBox, themeComboBox, bannerFontComboBox, bannerFontBoldCheckBox, additionalEffectComboBox, addBGColorCheckBox);
 
         mainSettingsForm = FormBuilder.createFormBuilder()
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
@@ -114,23 +117,33 @@ public class GlobalComponent {
                 .getPanel();
 
         showCaptionCheckBox.addActionListener(new ShowCaptionCheckBoxActionListener());
-        setFocusable(false, showCaptionCheckBox, showSpringVersionCheckBox, showJDKVersionCheckBox);
+        makeComponentsNonFocusable(showCaptionCheckBox, showSpringVersionCheckBox, showJDKVersionCheckBox);
 
         captionTextArea.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(JBColor.LIGHT_GRAY, 1, true),
                 BorderFactory.createEmptyBorder(TEXT_AREA_PADDING, TEXT_AREA_PADDING, TEXT_AREA_PADDING, TEXT_AREA_PADDING)));
 
-        val captionTextTooltip = getToolTipWithOffset("Freeform caption text. JDK and Spring Boot versions available as "+KEY_JDK_VERSION+" and "+KEY_SPRING_VERSION);
+        val captionTextTooltip1 = getToolTipWithOffset("Freeform caption text.");
+        val captionTextTooltip2 = getToolTipWithOffset("App version available as " + KEY_APP_VERSION );
+        val captionTextTooltip3 = getToolTipWithOffset("Spring Boot version available as " + KEY_SPRING_VERSION );
+        val captionTextTooltip4 = getToolTipWithOffset("JDK version available as " + KEY_JDK_VERSION );
         val captionFontColorPickerPanel = initBannerColorSelector(captionColorPicker, captionColorTooltip, new CaptionColorPickerListener());
 
         customCaptionSettingsForm = FormBuilder.createFormBuilder()
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
-                .addLabeledComponent(getLabelWithIndent("Show spring version:", SECONDARY_FORM_LABEL_MAX_LENGTH-2), showSpringVersionCheckBox)
+                .addLabeledComponent(getLabelWithIndent("Show app version:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), showAppVersionCheckBox)
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
-                .addLabeledComponent(getLabelWithIndent("Show jdk version:", SECONDARY_FORM_LABEL_MAX_LENGTH-2), showJDKVersionCheckBox)
+                .addLabeledComponent(getLabelWithIndent("Show spring version:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), showSpringVersionCheckBox)
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
-                .addLabeledComponent(getLabelWithIndent("Caption text:", SECONDARY_FORM_LABEL_MAX_LENGTH-2), captionTextArea)
-                .addComponentToRightColumn(captionTextTooltip)
+                .addLabeledComponent(getLabelWithIndent("Show jdk version:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), showJDKVersionCheckBox)
+                .addVerticalGap(STANDARD_VERTICAL_GAP)
+                .addLabeledComponent(getLabelWithIndent("Bullet style:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), captionBulletComboBox)
+                .addVerticalGap(STANDARD_VERTICAL_GAP)
+                .addLabeledComponent(getLabelWithIndent("Caption text:", SECONDARY_FORM_LABEL_MAX_LENGTH - 2), captionTextArea)
+                .addComponentToRightColumn(captionTextTooltip1)
+                .addComponentToRightColumn(captionTextTooltip2)
+                .addComponentToRightColumn(captionTextTooltip3)
+                .addComponentToRightColumn(captionTextTooltip4)
                 .addVerticalGap(STANDARD_VERTICAL_GAP)
                 .addLabeledComponent(captionColorLabel, captionFontColorPickerPanel)
                 .addComponentToRightColumn(captionColorTooltip)
@@ -148,12 +161,12 @@ public class GlobalComponent {
     }
 
     private @NotNull JBLabel getLabelWithIndent(String labelText, int labelMaxLength) {
-        String paddedLabel = String.format("%-"+labelMaxLength+"s", labelText);
-        return new JBLabel(INDENT+paddedLabel);
+        String paddedLabel = String.format("%-" + labelMaxLength + "s", labelText);
+        return new JBLabel(INDENT + paddedLabel);
     }
 
-    private void setFocusable(boolean focusable, JComponent... jComponents){
-        Arrays.stream(jComponents).forEach(jComponent -> jComponent.setFocusable(focusable));
+    private void makeComponentsNonFocusable(JComponent... jComponents) {
+        Arrays.stream(jComponents).forEach(jComponent -> jComponent.setFocusable(false));
     }
 
     private @NotNull JBLabel getToolTipWithOffset(String text) {
@@ -163,7 +176,7 @@ public class GlobalComponent {
     }
 
 
-    private JPanel initBannerColorSelector(ColorPanel colorPanel,JBLabel tooltip, ActionListener actionListener) {
+    private JPanel initBannerColorSelector(ColorPanel colorPanel, JBLabel tooltip, ActionListener actionListener) {
         colorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         colorPanel.setFocusable(false);
         colorPanel.setOpaque(true);
@@ -176,13 +189,13 @@ public class GlobalComponent {
     }
 
 
-    private void showBannerBGColorPicker(boolean show){
+    private void showBannerBGColorPicker(boolean show) {
         bannerBGColorLabel.setVisible(show);
         bannerBGColorPicker.setVisible(show);
         bannerBGColorTooltip.setVisible(show);
     }
 
-    private void showCaptionColorPicker(boolean show){
+    private void showCaptionColorPicker(boolean show) {
         captionColorPicker.setVisible(show);
         captionColorLabel.setVisible(show);
         captionColorTooltip.setVisible(show);
@@ -219,13 +232,13 @@ public class GlobalComponent {
 
     @NotNull
     public THEME_OPTION getTheme() {
-        String selected = (String) themeComboBox.getSelectedItem();
-        return StringUtils.isEmpty(selected)?THEME_OPTION.SURPRISE_ME: THEME_OPTION.value(selected);
+        THEME_OPTION selectedItem = (THEME_OPTION) themeComboBox.getSelectedItem();
+        return null == selectedItem ? THEME_OPTION.SURPRISE_ME : selectedItem;
     }
 
     public void setTheme(@NotNull THEME_OPTION themeOption) {
         themeTooltip.setText(themeOption.getDescription());
-        themeComboBox.setSelectedItem(themeOption.getLabel());
+        themeComboBox.setSelectedItem(themeOption);
     }
 
     @NotNull
@@ -236,7 +249,6 @@ public class GlobalComponent {
     public void setBannerFont(@NotNull String bannerFont) {
         bannerFontComboBox.setSelectedItem(bannerFont);
     }
-
 
 
     public boolean getBannerFontBold() {
@@ -293,6 +305,14 @@ public class GlobalComponent {
         showCaptionColorPicker(showCaption && showCustomSettings());
     }
 
+    public boolean getShowAppVersion() {
+        return showAppVersionCheckBox.isSelected();
+    }
+
+    public void setShowAppVersion(boolean show) {
+        showAppVersionCheckBox.setSelected(show);
+    }
+
     public boolean getShowSpringVersion() {
         return showSpringVersionCheckBox.isSelected();
     }
@@ -307,6 +327,16 @@ public class GlobalComponent {
 
     public void setShowJDKVersion(boolean show) {
         showJDKVersionCheckBox.setSelected(show);
+    }
+
+    @NotNull
+    public CAPTION_BULLET_STYLE getCaptionBulletStyle() {
+        CAPTION_BULLET_STYLE selectedItem = (CAPTION_BULLET_STYLE) captionBulletComboBox.getSelectedItem();
+        return null == selectedItem ? CAPTION_BULLET_STYLE.PIPE : selectedItem;
+    }
+
+    public void setCaptionBulletStyle(@NotNull CAPTION_BULLET_STYLE captionBulletStyle) {
+        captionBulletComboBox.setSelectedItem(captionBulletStyle);
     }
 
     @NotNull
@@ -327,8 +357,8 @@ public class GlobalComponent {
         captionColorPicker.setSelectedColor(color);
     }
 
-    boolean showCustomSettings(){
-        return THEME_OPTION.CUSTOM==THEME_OPTION.value(Objects.requireNonNull(themeComboBox.getSelectedItem()).toString());
+    boolean showCustomSettings() {
+        return THEME_OPTION.CUSTOM == THEME_OPTION.value(Objects.requireNonNull(themeComboBox.getSelectedItem()).toString());
     }
 
     class ShowBannerCheckBoxActionListener implements ActionListener {
@@ -339,6 +369,7 @@ public class GlobalComponent {
             customBannerSettingsForm.setVisible(showBanner && showCustomSettings());
         }
     }
+
     class ThemeComboBoxActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {

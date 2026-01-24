@@ -12,7 +12,7 @@ import java.util.List;
 public class PluginConstants {
 
     public static final String SPACE = " ";
-    public static final String EMPTY = "";
+    public static final String BLANK = "";
 
     public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
     public static final String SPRING_BOOT_ARTIFACT_ID = "spring-boot-starter";
@@ -25,7 +25,7 @@ public class PluginConstants {
             "ansishadow",
             "ansishadow",
             "banner3_d",
-            "banner4",
+            "banner3",
             "bigmoneyne",
             "block",
             "bolger",
@@ -47,6 +47,7 @@ public class PluginConstants {
             "nancyjunderlined",
             "poison",
             "puffy",
+            "roman",
             "small",
             "smslant",
             "slant",
@@ -57,13 +58,12 @@ public class PluginConstants {
             "univers",
             "usaflag",
             "whimsy");
-    public static final List<String> FONTS_WITH_PADDING_CORRECTION =List.of("bigmoneyne", "doom", "lean","stop");
+    public static final List<String> FONTS_WITH_PADDING_CORRECTION = List.of("bigmoneyne", "doom", "lean","stop");
 
     public static final List<String> FONT_OPTIONS;
     static{
         FONT_OPTIONS = new ArrayList<>();
         FONT_OPTIONS.add(RANDOM_FONT);
-        // de-duplicating default fonts before adding them to the options
 
         //de-duplicating default fonts before adding them to the options
         FONT_OPTIONS.addAll(DEFAULT_FONTS.stream().distinct().sorted().toList());

@@ -26,14 +26,6 @@
 - Caption underneath banner lists SpringBoot and JDK versions<br/>
 
 
-<h3>Usage Notes</h3>
-- Running the application from terminal will NOT reflect the banner changes as the plugin depends on IDE's internal
-build system<br/>
-- Project root must have a mavel/gradle build file.<br/>
-- If you are using gradle, make sure to enable Build and run using IntelliJ under 'Settings->Build->Build Tools->Gradle'<br/>
-- If you choose to Build and run using Gradle instead of IntelliJ, then consider using the <a
-        href="https://github.com/bhuyanp/spring-banner-gradle-plugin">Spring Banner Gradle Plugin</a> instead<br/>
-
 <h3>Alternatives</h3>
 If you are not using IntelliJ IDEA, consider using these alternatives.<br/>
 - <a href="https://github.com/bhuyanp/spring-banner-gradle-plugin">Gradle Plugin</a><br/>

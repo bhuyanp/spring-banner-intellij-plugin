@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.5"
+version = "2026.1.6"
 
 repositories {
     mavenCentral()
@@ -18,6 +18,7 @@ val lombokVersion = "1.18.30"
 
 dependencies {
     implementation("com.github.dtmo.jfiglet:jfiglet:1.0.1")
+    implementation("org.apache.maven:maven-model:3.9.12")//for pom parsin
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     intellijPlatform {
@@ -30,16 +31,15 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "252.25557"
+            sinceBuild = "251"
         }
 
         changeNotes = """
-        - Added granular control over generated caption<br/> 
-        - Freeform caption editor gives full control over caption text<br/> 
-        - Modernized tools window layout<br/> 
-        - Ability to turn on/off banners, captions or both<br/> 
-        - Randomized caption color with "Surprise Me" theme<br/> 
-        - Ability to customize caption color with Custom theme<br/> 
+            - Auto detection of app version from the build files<br/>
+            - App version is available as an option under captions<br/>
+            - App version is also available as a variable<br/>
+            - Multiple caption bullet styles to choose from including randomization<br/>
+            - Several performance improvements 
         """.trimIndent()
     }
 
