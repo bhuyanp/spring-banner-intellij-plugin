@@ -46,7 +46,7 @@ Please consider <a href="https://buymeacoffee.com/bhuyanp">supporting</a> our ef
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
-    <resource-bundle>messages.SpringBanner</resource-bundle>
+    <resource-bundle>messages.FunkyBanner</resource-bundle>
     <applicationListeners>
         <listener
                 class="io.github.bhuyanp.intellij.springbanner.SpringBannerBuildListener"
@@ -55,14 +55,14 @@ Please consider <a href="https://buymeacoffee.com/bhuyanp">supporting</a> our ef
     <extensions defaultExtensionNs="com.intellij">
 
         <applicationConfigurable parentId="tools"
-                                 bundle="messages.SpringBanner"
+                                 bundle="messages.FunkyBanner"
                                  key="sbb.plugin.name"
                                  id="io.github.bhuyanp.intellij.springbanner.root"
                                  instance="io.github.bhuyanp.intellij.springbanner.RootConfigurable"
         />
         <applicationConfigurable
                 parentId="io.github.bhuyanp.intellij.springbanner.root"
-                bundle="messages.SpringBanner"
+                bundle="messages.FunkyBanner"
                 key="sbb.plugin.setting.global"
                 instance="io.github.bhuyanp.intellij.springbanner.GlobalConfigurable"
                 id="io.github.bhuyanp.intellij.springbanner.GlobalConfigurable"/>
@@ -70,9 +70,46 @@ Please consider <a href="https://buymeacoffee.com/bhuyanp">supporting</a> our ef
                 parentId="io.github.bhuyanp.intellij.springbanner.root"
                 instance="io.github.bhuyanp.intellij.springbanner.ProjectConfigurable"
                 id="io.github.bhuyanp.intellij.springbanner.ProjectConfigurable"
-                bundle="messages.SpringBanner"
+                bundle="messages.FunkyBanner"
                 key="sbb.plugin.setting.project"
                 nonDefaultProject="true"/>
+        <notificationGroup id="io.github.bhuyanp.intellij.springbanner.BannerNotifier"
+                           displayType="BALLOON"
+                           bundle="messages.FunkyBanner"
+                           key="sbb.plugin.notifier"/>
     </extensions>
 
+    <actions>
+        <action
+                id="io.github.bhuyanp.intellij.springbanner.GenerateBannerAction"
+                class="io.github.bhuyanp.intellij.springbanner.GenerateBannerAction"
+                text="Generate Banner"
+                description="Generates spring boot banner">
+            
+            <synonym text="GB"/>
+
+            <add-to-group group-id="ToolsMenu"
+                          relative-to-action="GenerateJavadoc"
+                          anchor="after"/>
+            <!-- Add the first and second keystrokes to all keymaps... -->
+            <keyboard-shortcut
+                    keymap="$default"
+                    first-keystroke="control alt G"
+                    second-keystroke="B"/>
+
+            <!-- ...except the "Mac OS X" keymap and its children. -->
+            <keyboard-shortcut
+                    keymap="Mac OS X"
+                    first-keystroke="control alt G"
+                    second-keystroke="B"
+                    remove="true"/>
+            <!-- The "Mac OS X 10.5+" keymap and its children will have only
+            this keyboard shortcut for this action. -->
+            <keyboard-shortcut
+                    keymap="Mac OS X 10.5+"
+                    first-keystroke="control alt G"
+                    second-keystroke="B"
+                    replace-all="true"/>
+        </action>
+    </actions>
 </idea-plugin>

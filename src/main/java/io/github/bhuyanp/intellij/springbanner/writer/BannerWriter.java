@@ -69,7 +69,7 @@ public abstract class BannerWriter {
         }
     }
 
-    public static final BannerWriter of(WRITER_TYPE writerType) {
+    public static BannerWriter of(WRITER_TYPE writerType) {
         return switch (writerType) {
             case MAVEN -> new MavenWriter();
             case GRADLE -> new GradleWriter();

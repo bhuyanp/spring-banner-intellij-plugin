@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.1.6"
+version = "2026.2.1"
 
 repositories {
     mavenCentral()
@@ -35,11 +35,9 @@ intellijPlatform {
         }
 
         changeNotes = """
-            - Auto detection of app version from the build files<br/>
-            - App version is available as an option under captions<br/>
-            - App version is also available as a variable<br/>
-            - Multiple caption bullet styles to choose from including randomization<br/>
-            - Several performance improvements 
+            - Generate banner action introduced under tools menu<br/>
+            - Keyboard shortcut: Ctrl+Alt G,B<br/>
+            - New caption bullet style added<br/>
         """.trimIndent()
     }
 

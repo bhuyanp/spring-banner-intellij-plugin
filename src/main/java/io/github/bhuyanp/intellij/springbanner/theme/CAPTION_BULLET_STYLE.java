@@ -17,6 +17,7 @@ public enum CAPTION_BULLET_STYLE {
     GT(">", true),
     PIPE("|", false),
     GTA("->", false),
+    GTE("=>", false),
     POUND("#", false),
     DASH("-", false),
     DOLLAR("$", false),
