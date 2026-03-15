@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.bhuyanp.intellij"
-version = "2026.2.1"
+version = "2026.3.1"
 
 repositories {
     mavenCentral()
@@ -35,9 +35,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            - Generate banner action introduced under tools menu<br/>
-            - Keyboard shortcut: Ctrl+Alt G,B<br/>
-            - New caption bullet style added<br/>
+            - Multi module project support<br/>
         """.trimIndent()
     }
 

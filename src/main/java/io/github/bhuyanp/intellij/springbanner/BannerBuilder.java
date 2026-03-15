@@ -18,6 +18,7 @@ import io.github.bhuyanp.intellij.springbanner.util.FunkyBannerBundle;
 import io.github.bhuyanp.intellij.springbanner.writer.BannerWriter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.ivy.util.Message;
 import org.apache.maven.model.Model;
@@ -26,10 +27,12 @@ import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.bhuyanp.intellij.springbanner.ansi.Attribute.NONE;
@@ -43,6 +46,7 @@ import static io.github.bhuyanp.intellij.springbanner.util.PluginConstants.BLANK
  * @author <a href="mailto:prasanta.k.bhuyan@gmail.com">Prasanta Bhuyan</a>
  * @Date 1/25/26
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BannerBuilder {
     public static final BannerBuilder INSTANCE = new BannerBuilder();
@@ -52,46 +56,64 @@ public class BannerBuilder {
     private static final String BUILD_GRADLE_KTS = "build.gradle.kts";
 
     public void build(@NotNull Project project, boolean isAutomake, boolean showNotification) {
-        if(isAutomake) return;
+        if (isAutomake) return;
+        String rootProjectPath = Objects.requireNonNull(project.getBasePath(), "project base path missing");
+        ProjectSettings.State projectSettings = Objects.requireNonNull(ProjectSettings.getState(project.getName()));
+        AppSettings.State settings = projectSettings.useProjectSpecificSetting ? projectSettings : Objects.requireNonNull(AppSettings.getInstance().getState());
+
         try {
-            String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
-            ProjectSettings.State projectSettings = Objects.requireNonNull(ProjectSettings.getState(project.getName()));
-            AppSettings.State settings = projectSettings.useProjectSpecificSetting ? projectSettings : Objects.requireNonNull(AppSettings.getInstance().getState());
+            Files.walk(Path.of(rootProjectPath))
+                    .filter(path -> path.getFileName().toString().equals(POM_XML) ||
+                            path.getFileName().toString().equals(BUILD_GRADLE) ||
+                            path.getFileName().toString().equals(BUILD_GRADLE_KTS))
+                    .forEach(buildFilePath -> {
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                String projectPath = buildFilePath.getParent().toString();
+                                String projectFolderName = buildFilePath.getParent().getFileName().toString();
+                                boolean isRootProject = projectPath.equalsIgnoreCase(rootProjectPath);
+                                BUILD_TOOL buildTool = determineBuildTool(projectPath);
+                                if (buildTool == BUILD_TOOL.UNDETECTED) return;
 
-            BUILD_TOOL buildTool = determineBuildTool(project);
-            if(buildTool== BUILD_TOOL.UNDETECTED) return;
+                                String generatedBanner = BLANK;
+                                if (settings.showBanner) {
+                                    generatedBanner = generateBanner(project, projectFolderName, isRootProject, settings);
+                                }
+                                String generatedCaption = BLANK;
+                                if (settings.showCaption) {
+                                    generatedCaption = generateCaption(project, buildFilePath, settings, buildTool);
+                                }
 
-            String generatedBanner = BLANK;
-            if (settings.showBanner) {
-                generatedBanner = generateBanner(project, settings);
-            }
-            String generatedCaption = BLANK;
-            if (settings.showCaption) {
-                generatedCaption = generateCaption(project, settings, buildTool);
-            }
-
-            String finalText;
-            if (StringUtils.isEmpty(generatedBanner) && StringUtils.isEmpty(generatedCaption)) {
-                finalText = BLANK;
-            } else if (!StringUtils.isEmpty(generatedBanner) && !StringUtils.isEmpty(generatedCaption)) {
-                finalText = generatedBanner + System.lineSeparator().repeat(2) + generatedCaption;
-            } else if (!StringUtils.isEmpty(generatedBanner)) {
-                finalText = generatedBanner;
-            } else {
-                finalText = generatedCaption;
-            }
-            finalText = !StringUtils.isEmpty(finalText) ? System.lineSeparator() + finalText + System.lineSeparator() : finalText;
-            writeBannerFile(buildTool, finalText, projectBasePath);
-            if(showNotification)
-                BannerNotifier.notify(project, FunkyBannerBundle.message("sbb.msg.banner-generated"));
-        } catch (Exception e) {
+                                String finalText;
+                                if (StringUtils.isEmpty(generatedBanner) && StringUtils.isEmpty(generatedCaption)) {
+                                    finalText = BLANK;
+                                } else if (!StringUtils.isEmpty(generatedBanner) && !StringUtils.isEmpty(generatedCaption)) {
+                                    finalText = generatedBanner + System.lineSeparator().repeat(2) + generatedCaption;
+                                } else if (!StringUtils.isEmpty(generatedBanner)) {
+                                    finalText = generatedBanner;
+                                } else {
+                                    finalText = generatedCaption;
+                                }
+                                finalText = !StringUtils.isEmpty(finalText) ? System.lineSeparator() + finalText + System.lineSeparator() : finalText;
+                                writeBannerFile(finalText, projectPath);
+                                if (showNotification)
+                                    BannerNotifier.notify(project, FunkyBannerBundle.message("sbb.msg.banner-generated"));
+                            } catch (Exception e) {
+                                log.error("Error while generating banner for {}", buildFilePath.getParent().toString(), e);
+                            }
+                        });
+                    });
+        } catch (IOException e) {
+            log.error("Error while scanning project directory for build scripts", e);
         }
     }
 
 
-    private String generateBanner(Project project, AppSettings.State settings) {
+    private String generateBanner(Project project, String projectFolderName, boolean isRootProject, AppSettings.State settings) {
         String bannerText = settings.bannerText;
-        bannerText = StringUtil.isEmpty(bannerText) ? project.getName() : bannerText;
+        String projectName = isRootProject ? project.getName() : projectFolderName;
+        bannerText = StringUtil.isEmpty(bannerText) ? projectName : bannerText;
+
         THEME_OPTION themePreset = settings.selectedTheme;
         String bannerFont = settings.bannerFont;
         ThemeConfig bannerThemeConfig;
@@ -112,11 +134,11 @@ public class BannerBuilder {
         return SpringBannerGenerator.INSTANCE.getBanner(springBannerConfig);
     }
 
-    private String generateCaption(Project project, AppSettings.State settings, BUILD_TOOL buildTool) {
+    private String generateCaption(Project project, Path buildFilePath, AppSettings.State settings, BUILD_TOOL buildTool) {
         THEME_OPTION themePreset = settings.selectedTheme;
         SpringCaptionConfig springCaptionConfig = new SpringCaptionConfig(settings);
 
-        springCaptionConfig.setAppVersion(getAppVersion(project, buildTool));
+        springCaptionConfig.setAppVersion(getAppVersion(buildFilePath, buildTool));
         springCaptionConfig.setSpringVersion(getSpringBootVersion(project));
         springCaptionConfig.setJdkVersion(getSDKVersion(project));
 
@@ -135,26 +157,17 @@ public class BannerBuilder {
         return SpringCaptionGenerator.INSTANCE.getCaption(springCaptionConfig);
     }
 
-    private static void writeBannerFile(BUILD_TOOL buildTool, String generatedBanner, String projectBasePath) {
-        switch (buildTool) {
-            case MAVEN -> BannerWriter.of(BannerWriter.WRITER_TYPE.MAVEN).write(generatedBanner, projectBasePath);
-            case GRADLE_GROOVY, GRADLE_KOTLIN -> BannerWriter.of(BannerWriter.WRITER_TYPE.GRADLE).write(generatedBanner, projectBasePath);
-            case UNDETECTED ->
-                    Message.info("No Gradle or Maven build scripts detected at project root. Spring Boot banner not generated.");
-        }
+    private static void writeBannerFile(String generatedBanner, String projectBasePath) {
+        BannerWriter.of(BannerWriter.WRITER_TYPE.SOURCE).write(generatedBanner, projectBasePath);
     }
 
 
-    private BUILD_TOOL determineBuildTool(Project project) {
-        String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path");
-        Path gradleScript = Path.of(projectBasePath, BUILD_GRADLE);
-        Path gradleScriptKotlinDSL = Path.of(projectBasePath, BUILD_GRADLE_KTS);
-        Path mavenScript = Path.of(projectBasePath, POM_XML);
-        if (Files.exists(gradleScript))
+    private BUILD_TOOL determineBuildTool(String projectBasePath) {
+        if (Files.exists(Path.of(projectBasePath, BUILD_GRADLE)))
             return BUILD_TOOL.GRADLE_GROOVY;
-        else if(Files.exists(gradleScriptKotlinDSL))
+        else if (Files.exists(Path.of(projectBasePath, BUILD_GRADLE_KTS)))
             return BUILD_TOOL.GRADLE_KOTLIN;
-        else if (Files.exists(mavenScript))
+        else if (Files.exists(Path.of(projectBasePath, POM_XML)))
             return BUILD_TOOL.MAVEN;
         else
             return BUILD_TOOL.UNDETECTED;
@@ -191,16 +204,10 @@ public class BannerBuilder {
         return projectSdk.getVersionString();
     }
 
-    private String getAppVersion(Project project, BUILD_TOOL buildTool) {
-        String projectBasePath = Objects.requireNonNull(project.getBasePath(), "project base path missing");
-        Path mavenScript = Path.of(projectBasePath, POM_XML);
-        Path gradleScript = Path.of(projectBasePath, BUILD_GRADLE);
-        Path gradleKotlinScript = Path.of(projectBasePath, BUILD_GRADLE_KTS);
-
-        return switch (buildTool){
-            case MAVEN ->getMavenAppVersion(mavenScript);
-            case GRADLE_KOTLIN -> getGradleAppVersion(gradleKotlinScript);
-            case GRADLE_GROOVY -> getGradleAppVersion(gradleScript);
+    private String getAppVersion(Path buildFilePath, BUILD_TOOL buildTool) {
+        return switch (buildTool) {
+            case MAVEN -> getMavenAppVersion(buildFilePath);
+            case GRADLE_KOTLIN, GRADLE_GROOVY -> getGradleAppVersion(buildFilePath);
             case UNDETECTED -> BLANK;
         };
     }
@@ -218,11 +225,11 @@ public class BannerBuilder {
     private String getGradleAppVersion(Path gradleScriptPath) {
         try {
             String scriptContent = Files.readString(gradleScriptPath);
-            String versionLine =  scriptContent.lines()
-                    .filter(line->line.contains("version") && line.contains("="))
+            String versionLine = scriptContent.lines()
+                    .filter(line -> line.contains("version") && line.contains("="))
                     .findFirst()
                     .orElse(BLANK);
-            if(versionLine.equals(BLANK)) return BLANK;
+            if (versionLine.equals(BLANK)) return BLANK;
             return versionLine
                     .replace("version", BLANK)
                     .replace("\"", BLANK)
